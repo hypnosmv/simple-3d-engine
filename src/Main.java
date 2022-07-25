@@ -112,7 +112,7 @@ public class Main {
         mat4x4 matRotX = new mat4x4();
 
         float dist = meshCube.getMax() * 2;
-        float distSpeed = meshCube.getMax() * 0.003f;
+        float distSpeed = meshCube.getMax() * 0.004f;
 
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

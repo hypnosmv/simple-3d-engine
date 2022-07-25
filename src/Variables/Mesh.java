@@ -1,22 +1,22 @@
-package ProjectionUtil;
+package Variables;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class mesh {
-    public ArrayList<face> faces = new ArrayList<>();
+public class Mesh {
+    public ArrayList<Face> faces = new ArrayList<>();
 
     public void inputOBJ(String file) {
 
         try {
-            // Handle file
+            // File readers
             FileReader fileReader = new FileReader(file);
             BufferedReader buffReader = new BufferedReader(fileReader);
 
             // Read vectors
-            ArrayList<vec3f> vecs = new ArrayList<>();
+            ArrayList<Vector3f> vecs = new ArrayList<>();
 
             while (buffReader.ready()) {
 
@@ -26,12 +26,12 @@ public class mesh {
 
                     if (line.charAt(0) == 'v' && line.charAt(1) == ' ') {
 
-                        vec3f vec = new vec3f(0.0f, 0.0f, 0.0f);
+                        Vector3f vec = new Vector3f(0.0f, 0.0f, 0.0f);
                         StringBuilder numberString = new StringBuilder();
                         float numberFloat;
                         int i = 1;
 
-                        // Clear spaces
+                        // Clearing spaces
                         while (line.charAt(i) == ' ') i++;
 
                         // X coordinate
@@ -62,20 +62,20 @@ public class mesh {
                         numberFloat = Float.parseFloat(numberString.toString());
                         vec.z = numberFloat;
 
-                        // Finally, add the vector
+                        // Finally, adding  the vector
                         vecs.add(vec);
                     }
                     else if (line.charAt(0) == 'f' && line.charAt(1) == ' ') {
 
-                        face f = new face();
+                        Face f = new Face();
                         StringBuilder numberString = new StringBuilder();
                         int numberInt;
                         int i = 1;
 
-                        // Clear spaces
+                        // Clearing spaces
                         while (line.charAt(i) == ' ') i++;
 
-                        // Old vs new-school
+                        // Different formats
                         if (!line.contains("/")) {
                             while (i < line.length()) {
                                 // Get to index
@@ -88,13 +88,12 @@ public class mesh {
                                 numberInt = Integer.parseInt(numberString.toString());
                                 numberString = new StringBuilder();
                                 f.verts.add(vecs.get(numberInt - 1));
-                                System.out.println(numberInt);
                                 i++;
                             }
                         }
                         else {
 
-                            // Add faces that store 3+ vectors
+                            // Adding faces that store 3+ vectors
                             while (i < line.length()) {
                                 // Get to index
                                 while (line.charAt(i) != '/') {
@@ -117,7 +116,7 @@ public class mesh {
                             }
                         }
 
-                        // Finally, add the face
+                        // Finally, adding the face
                         this.faces.add(f);
                     }
                 }
@@ -128,21 +127,6 @@ public class mesh {
             throw new RuntimeException(e);
         }
 
-    }
-
-    public float getMax() {
-
-        float max = 0.0f;
-
-        for (face f : this.faces) {
-            for (vec3f vec : f.verts) {
-                if (Math.abs(vec.x) > max) max = vec.x;
-                if (Math.abs(vec.y) > max) max = vec.y;
-                if (Math.abs(vec.z) > max) max = vec.z;
-            }
-        }
-
-        return max;
     }
 
 }
