@@ -106,7 +106,7 @@ public class Output3d {
 
             }
 
-            // Sort using z-depth
+            // Sort using z-depth (painter's algorithm)
             renderQueue = QuickSort.quickSortFace(renderQueue);
 
             // Draw faces of the mesh
