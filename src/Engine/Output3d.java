@@ -87,15 +87,15 @@ public class Output3d {
                             break;
                     }
 
-                    vectorTranslated = projectionMatrix.multiply(vectorTranslated);
                     renderQueue[i] = new Vector3f(vectorTranslated.x, vectorTranslated.y, vectorTranslated.z);
                 }
 
                 // Draw the face if it is visible (using the dot product)
                 if (normal.x * (firstVector.x - camera.position.x) +  normal.y * (firstVector.y - camera.position.y) + normal.z * (firstVector.z - camera.position.z) < 0) {
                     // GL_LINE_LOOP ensures that the last vertex specified is connected to first vertex
-                    glBegin(GL_LINE_LOOP);
+                    glBegin(GL_POLYGON);
                     for (Vector3f vector : renderQueue) {
+                        vector = projectionMatrix.multiply(vector);
                         glVertex2f(vector.x, vector.y);
                     }
                     glEnd();
