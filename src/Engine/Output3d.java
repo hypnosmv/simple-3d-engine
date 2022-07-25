@@ -32,37 +32,75 @@ public class Output3d {
 
         float frameTime = (float)glfwGetTime();
 
+        rotationMatrixZ.m[0][0] = (float)Math.cos(frameTime);
+        rotationMatrixZ.m[0][1] = (float)Math.sin(frameTime);
+        rotationMatrixZ.m[1][0] = (float)-Math.sin(frameTime);
+        rotationMatrixZ.m[1][1] = (float)Math.cos(frameTime);
+        rotationMatrixZ.m[2][2] = 1.0f;
+        rotationMatrixZ.m[3][3] = 1.0f;
+
+        rotationMatrixX.m[0][0] = 1.0f;
+        rotationMatrixX.m[1][1] = (float)Math.cos(frameTime * 0.5f);
+        rotationMatrixX.m[1][2] = (float)Math.sin(frameTime * 0.5f);
+        rotationMatrixX.m[2][1] = (float)-Math.sin(frameTime * 0.5f);
+        rotationMatrixX.m[2][2] = (float)Math.cos(frameTime * 0.5f);
+        rotationMatrixX.m[3][3] = 1.0f;
+
         for (Mesh mesh : meshes) {
             for (Face face : mesh.faces) {
-                // GL_LINE_LOOP ensures that the last vertex specified is connected to first vertex
-                glBegin(GL_LINE_LOOP);
-                for (Vector3f vector : face.verts) {
 
-                    rotationMatrixZ.m[0][0] = (float)Math.cos(frameTime);
-                    rotationMatrixZ.m[0][1] = (float)Math.sin(frameTime);
-                    rotationMatrixZ.m[1][0] = (float)-Math.sin(frameTime);
-                    rotationMatrixZ.m[1][1] = (float)Math.cos(frameTime);
-                    rotationMatrixZ.m[2][2] = 1.0f;
-                    rotationMatrixZ.m[3][3] = 1.0f;
+                Vector3f[] renderQueue = new Vector3f[face.verts.size()];
 
-                    rotationMatrixX.m[0][0] = 1.0f;
-                    rotationMatrixX.m[1][1] = (float)Math.cos(frameTime * 0.5f);
-                    rotationMatrixX.m[1][2] = (float)Math.sin(frameTime * 0.5f);
-                    rotationMatrixX.m[2][1] = (float)-Math.sin(frameTime * 0.5f);
-                    rotationMatrixX.m[2][2] = (float)Math.cos(frameTime * 0.5f);
-                    rotationMatrixX.m[3][3] = 1.0f;
+                Vector3f firstVector = new Vector3f(0.0f, 0.0f, 0.0f);
+                Vector3f secondVector = new Vector3f(0.0f, 0.0f, 0.0f);
+                Vector3f normal = new Vector3f(0.0f, 0.0f, 0.0f);
+
+                for (int i = 0; i < face.verts.size(); i++) {
 
                     // Ensuring that we don't overwrite vectors of the mesh
-                    Vector3f vectorTranslated = rotationMatrixZ.multiply(vector);
+                    Vector3f vectorTranslated = rotationMatrixZ.multiply(face.verts.get(i));
                     vectorTranslated = rotationMatrixX.multiply(vectorTranslated);
                     vectorTranslated.z += 600.0f;
+
+                    switch(i) {
+                        case 0:
+                            firstVector.x = vectorTranslated.x;
+                            firstVector.y = vectorTranslated.y;
+                            firstVector.z = vectorTranslated.z;
+                            break;
+                        case 1:
+                            secondVector.x = vectorTranslated.x;
+                            secondVector.y = vectorTranslated.y;
+                            secondVector.z = vectorTranslated.z;
+                            break;
+                        case 2:
+                            Vector3f line1 = new Vector3f(secondVector.x - firstVector.x, secondVector.y - firstVector.y, secondVector.z - firstVector.z);
+                            Vector3f line2 = new Vector3f(vectorTranslated.x - firstVector.x, vectorTranslated.y - firstVector.y, vectorTranslated.z - firstVector.z);
+                            normal.x = line1.y * line2.z - line1.z * line2.y;
+                            normal.y = line1.z * line2.x - line1.x * line2.z;
+                            normal.z = line1.x * line2.y - line1.y * line2.x;
+
+                            float normalLength = (float)Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+                            normal.x /= normalLength;
+                            normal.y /= normalLength;
+                            normal.z /= normalLength;
+                            break;
+                    }
+
                     vectorTranslated = projectionMatrix.multiply(vectorTranslated);
-
-                    // OpenGL vertex
-                    glVertex2f(vectorTranslated.x, vectorTranslated.y);
-
+                    renderQueue[i] = new Vector3f(vectorTranslated.x, vectorTranslated.y, vectorTranslated.z);
                 }
-                glEnd();
+
+                // Draw the face if it is visible (using the dot product)
+                if (normal.x * (firstVector.x - camera.position.x) +  normal.y * (firstVector.y - camera.position.y) + normal.z * (firstVector.z - camera.position.z) < 0) {
+                    // GL_LINE_LOOP ensures that the last vertex specified is connected to first vertex
+                    glBegin(GL_LINE_LOOP);
+                    for (Vector3f vector : renderQueue) {
+                        glVertex2f(vector.x, vector.y);
+                    }
+                    glEnd();
+                }
+
             }
         }
     }
