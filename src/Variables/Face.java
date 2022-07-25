@@ -4,7 +4,8 @@ import java.util.ArrayList;
 
 public class Face {
     public ArrayList<Vector3f> verts = new ArrayList<>();
-    float zDepth = 0.0f;
+    public float zDepth = 0.0f;
+    public float color = 0.0f;
 
     public void calculateZDepth() {
         float zSum = 0.0f;

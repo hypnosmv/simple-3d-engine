@@ -1,6 +1,8 @@
 package Engine;
 
 import java.util.ArrayList;
+
+import Utility.QuickSort;
 import Variables.*;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL11.*;
@@ -47,9 +49,12 @@ public class Output3d {
         rotationMatrixX.m[3][3] = 1.0f;
 
         for (Mesh mesh : meshes) {
+
+            ArrayList<Face> renderQueue = new ArrayList<>();
+
             for (Face face : mesh.faces) {
 
-                Vector3f[] renderQueue = new Vector3f[face.verts.size()];
+                Face renderRequest = new Face();
 
                 Vector3f firstVector = new Vector3f(0.0f, 0.0f, 0.0f);
                 Vector3f secondVector = new Vector3f(0.0f, 0.0f, 0.0f);
@@ -84,37 +89,50 @@ public class Output3d {
                             break;
                     }
 
-                    renderQueue[i] = new Vector3f(vectorTranslated.x, vectorTranslated.y, vectorTranslated.z);
+                    renderRequest.verts.add(new Vector3f(vectorTranslated.x, vectorTranslated.y, vectorTranslated.z));
                 }
 
-                // Draw the face if it is visible (using the dot product)
                 if (normal.x * (firstVector.x - camera.position.x) +  normal.y * (firstVector.y - camera.position.y) + normal.z * (firstVector.z - camera.position.z) < 0) {
 
-                    glBegin(GL_POLYGON);
-                    for (Vector3f vector : renderQueue) {
+                    Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
+                    lightDirection.normalize();
 
-                        Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
-                        lightDirection.normalize();
-                        float lightColor = normal.x * lightDirection.x + normal.y * lightDirection.y + normal.z * lightDirection.z;
+                    renderRequest.color = normal.x * lightDirection.x + normal.y * lightDirection.y + normal.z * lightDirection.z;
+                    renderRequest.calculateZDepth();
 
-                        vector = projectionMatrix.multiply(vector);
-
-                        glColor3f(lightColor, lightColor, lightColor);
-                        glVertex2f(vector.x, vector.y);
-
-                    }
-                    glEnd();
+                    renderQueue.add(renderRequest);
 
                 }
 
             }
+
+            // Sort using z-depth
+            renderQueue = QuickSort.quickSortFace(renderQueue);
+
+            // Draw faces of the mesh
+            for (Face face : renderQueue) {
+                glBegin(GL_POLYGON);
+                for (Vector3f vector : face.verts) {
+
+                    // Project onto the display using the projection matrix
+                    vector = projectionMatrix.multiply(vector);
+
+                    // Color and display cords
+                    glColor3f(face.color, face.color, face.color);
+                    glVertex2f(vector.x, vector.y);
+
+                }
+                glEnd();
+            }
+
         }
     }
 
-    // Adding a new mesh
+    // Add a new mesh
     private void addMesh(String file) {
         Mesh mesh = new Mesh();
         mesh.inputOBJ(file);
         meshes.add(mesh);
     }
+
 }
