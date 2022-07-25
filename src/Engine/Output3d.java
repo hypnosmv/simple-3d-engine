@@ -80,10 +80,7 @@ public class Output3d {
                             normal.y = line1.z * line2.x - line1.x * line2.z;
                             normal.z = line1.x * line2.y - line1.y * line2.x;
 
-                            float normalLength = (float)Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
-                            normal.x /= normalLength;
-                            normal.y /= normalLength;
-                            normal.z /= normalLength;
+                            normal.normalize();
                             break;
                     }
 
@@ -92,13 +89,22 @@ public class Output3d {
 
                 // Draw the face if it is visible (using the dot product)
                 if (normal.x * (firstVector.x - camera.position.x) +  normal.y * (firstVector.y - camera.position.y) + normal.z * (firstVector.z - camera.position.z) < 0) {
-                    // GL_LINE_LOOP ensures that the last vertex specified is connected to first vertex
+
                     glBegin(GL_POLYGON);
                     for (Vector3f vector : renderQueue) {
+
+                        Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
+                        lightDirection.normalize();
+                        float lightColor = normal.x * lightDirection.x + normal.y * lightDirection.y + normal.z * lightDirection.z;
+
                         vector = projectionMatrix.multiply(vector);
+
+                        glColor3f(lightColor, lightColor, lightColor);
                         glVertex2f(vector.x, vector.y);
+
                     }
                     glEnd();
+
                 }
 
             }
