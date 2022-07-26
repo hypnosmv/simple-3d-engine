@@ -13,7 +13,7 @@ public class Output3d {
     private ArrayList<Mesh> meshes = new ArrayList<>();
 
     // Projection matrix
-    private Matrix4x4 projectionMatrix;
+    private Matrix4x4 projectionMatrix = new Matrix4x4();
 
     // Rotation matrices
     Matrix4x4 rotationMatrixZ = new Matrix4x4();
@@ -24,7 +24,7 @@ public class Output3d {
 
     // Constructor
     public Output3d(int viewWidth, int viewHeight) {
-        projectionMatrix = camera.initProjectionMatrix(viewWidth, viewHeight);
+        projectionMatrix.initProjectionMatrix(viewWidth, viewHeight, camera.getCameraNear(), camera.cameraFar(), camera.getFOV());
 
         addMesh("input.obj");
     }
@@ -34,19 +34,8 @@ public class Output3d {
 
         float frameTime = (float)glfwGetTime();
 
-        rotationMatrixZ.m[0][0] = (float)Math.cos(frameTime);
-        rotationMatrixZ.m[0][1] = (float)Math.sin(frameTime);
-        rotationMatrixZ.m[1][0] = (float)-Math.sin(frameTime);
-        rotationMatrixZ.m[1][1] = (float)Math.cos(frameTime);
-        rotationMatrixZ.m[2][2] = 1.0f;
-        rotationMatrixZ.m[3][3] = 1.0f;
-
-        rotationMatrixX.m[0][0] = 1.0f;
-        rotationMatrixX.m[1][1] = (float)Math.cos(frameTime * 0.5f);
-        rotationMatrixX.m[1][2] = (float)Math.sin(frameTime * 0.5f);
-        rotationMatrixX.m[2][1] = (float)-Math.sin(frameTime * 0.5f);
-        rotationMatrixX.m[2][2] = (float)Math.cos(frameTime * 0.5f);
-        rotationMatrixX.m[3][3] = 1.0f;
+        rotationMatrixZ.initRotationMatrixZ(frameTime);
+        rotationMatrixX.initRotationMatrixX(frameTime);
 
         for (Mesh mesh : meshes) {
 
