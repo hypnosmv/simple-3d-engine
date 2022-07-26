@@ -69,22 +69,13 @@ public class Output3d {
 
                     switch(i) {
                         case 0:
-                            firstVector.x = vectorTranslated.x;
-                            firstVector.y = vectorTranslated.y;
-                            firstVector.z = vectorTranslated.z;
+                            firstVector.newVector(vectorTranslated);
                             break;
                         case 1:
-                            secondVector.x = vectorTranslated.x;
-                            secondVector.y = vectorTranslated.y;
-                            secondVector.z = vectorTranslated.z;
+                            secondVector.newVector(vectorTranslated);
                             break;
                         case 2:
-                            Vector3f line1 = new Vector3f(secondVector.x - firstVector.x, secondVector.y - firstVector.y, secondVector.z - firstVector.z);
-                            Vector3f line2 = new Vector3f(vectorTranslated.x - firstVector.x, vectorTranslated.y - firstVector.y, vectorTranslated.z - firstVector.z);
-                            normal.x = line1.y * line2.z - line1.z * line2.y;
-                            normal.y = line1.z * line2.x - line1.x * line2.z;
-                            normal.z = line1.x * line2.y - line1.y * line2.x;
-
+                            normal.crossProduct(new Vector3f(secondVector.x - firstVector.x, secondVector.y - firstVector.y, secondVector.z - firstVector.z), new Vector3f(vectorTranslated.x - firstVector.x, vectorTranslated.y - firstVector.y, vectorTranslated.z - firstVector.z));
                             normal.normalize();
                             break;
                     }
