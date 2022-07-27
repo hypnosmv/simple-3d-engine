@@ -34,15 +34,17 @@ public class Matrix4x4 {
     }
 
     public void initRotationMatrixX (float frameTime) {
+        frameTime *= 0.25f;
         this.m[0][0] = 1.0f;
-        this.m[1][1] = (float)Math.cos(frameTime * 0.5f);
-        this.m[1][2] = (float)Math.sin(frameTime * 0.5f);
-        this.m[2][1] = (float)-Math.sin(frameTime * 0.5f);
-        this.m[2][2] = (float)Math.cos(frameTime * 0.5f);
+        this.m[1][1] = (float)Math.cos(frameTime);
+        this.m[1][2] = (float)Math.sin(frameTime);
+        this.m[2][1] = (float)-Math.sin(frameTime);
+        this.m[2][2] = (float)Math.cos(frameTime);
         this.m[3][3] = 1.0f;
     }
 
     public void initRotationMatrixZ (float frameTime) {
+        frameTime *= 0.5f;
         this.m[0][0] = (float)Math.cos(frameTime);
         this.m[0][1] = (float)Math.sin(frameTime);
         this.m[1][0] = (float)-Math.sin(frameTime);

@@ -75,7 +75,6 @@ public class Output3d {
                 if (normal.x * (firstVector.x - camera.position.x) +  normal.y * (firstVector.y - camera.position.y) + normal.z * (firstVector.z - camera.position.z) < 0) {
 
                     Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
-                    lightDirection.normalize();
 
                     renderRequest.color = normal.x * lightDirection.x + normal.y * lightDirection.y + normal.z * lightDirection.z;
                     renderRequest.calculateZDepth();
