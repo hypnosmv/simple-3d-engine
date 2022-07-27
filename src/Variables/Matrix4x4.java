@@ -31,6 +31,19 @@ public class Matrix4x4 {
         this.m[3][3] = 0.0f;
     }
 
+    public static Matrix4x4 rotateX (float angleRad) {
+        Matrix4x4 matrix = new Matrix4x4();
+
+        matrix.m[0][0] = 1.0f;
+        matrix.m[1][1] = (float)Math.cos(angleRad);
+        matrix.m[1][2] = (float)Math.sin(angleRad);
+        matrix.m[2][1] = (float)-Math.sin(angleRad);
+        matrix.m[2][2] = (float)Math.cos(angleRad);
+        matrix.m[3][3] = 1.0f;
+
+        return matrix;
+    }
+
     public static Matrix4x4 rotateY (float angleRad) {
         Matrix4x4 matrix = new Matrix4x4();
 
@@ -39,6 +52,19 @@ public class Matrix4x4 {
         matrix.m[2][0] = (float)-Math.sin(angleRad);
         matrix.m[1][1] = 1.0f;
         matrix.m[2][2] = (float)Math.cos(angleRad);
+        matrix.m[3][3] = 1.0f;
+
+        return matrix;
+    }
+
+    public static Matrix4x4 rotateZ (float angleRad) {
+        Matrix4x4 matrix = new Matrix4x4();
+
+        matrix.m[0][0] = (float)Math.cos(angleRad);
+        matrix.m[0][1] = (float)Math.sin(angleRad);
+        matrix.m[1][0] = (float)-Math.sin(angleRad);
+        matrix.m[1][1] = (float)Math.cos(angleRad);
+        matrix.m[2][2] = 1.0f;
         matrix.m[3][3] = 1.0f;
 
         return matrix;
@@ -94,25 +120,5 @@ public class Matrix4x4 {
         outputMatrix.m[3][3] = 1.0f;
 
         return outputMatrix;
-    }
-
-    public void initRotationMatrixX (float frameTime) {
-        frameTime *= 0.25f;
-        this.m[0][0] = 1.0f;
-        this.m[1][1] = (float)Math.cos(frameTime);
-        this.m[1][2] = (float)Math.sin(frameTime);
-        this.m[2][1] = (float)-Math.sin(frameTime);
-        this.m[2][2] = (float)Math.cos(frameTime);
-        this.m[3][3] = 1.0f;
-    }
-
-    public void initRotationMatrixZ (float frameTime) {
-        frameTime *= 0.5f;
-        this.m[0][0] = (float)Math.cos(frameTime);
-        this.m[0][1] = (float)Math.sin(frameTime);
-        this.m[1][0] = (float)-Math.sin(frameTime);
-        this.m[1][1] = (float)Math.cos(frameTime);
-        this.m[2][2] = 1.0f;
-        this.m[3][3] = 1.0f;
     }
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import Utility.QuickSort;
 import Variables.*;
+
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -34,21 +35,23 @@ public class Output3d {
     }
 
     // Loop process
-    public void display3d() {
+    public void display3d(float frameTime) {
 
-        float frameTime = (float)glfwGetTime();
+        float elapsedTime = (float)glfwGetTime();
 
         if (userUpdate.statusKeyUp()) camera.position.y += camera.moveSpeed * frameTime;
         if (userUpdate.statusKeyDown()) camera.position.y -= camera.moveSpeed * frameTime;
-        if (userUpdate.statusKeyLeft()) camera.position.x -= camera.moveSpeed * frameTime;
-        if (userUpdate.statusKeyRight()) camera.position.x += camera.moveSpeed * frameTime;
+
+        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.lookDirection.z, camera.lookDirection.y, camera.lookDirection.x), camera.moveSpeed * frameTime);
+        if (userUpdate.statusKeyLeft()) camera.position = Vector3f.addVectors(camera.position, cameraLeft);
+        if (userUpdate.statusKeyRight()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
 
         Vector3f cameraForward = Vector3f.multiplyVector(camera.lookDirection, camera.moveSpeed * frameTime);
         if (userUpdate.statusKeyW()) camera.position = Vector3f.addVectors(camera.position, cameraForward);
         if (userUpdate.statusKeyS()) camera.position = Vector3f.subtractVectors(camera.position, cameraForward);
 
-        if (userUpdate.statusKeyA()) camera.fYaw += camera.rotationYSpeed * frameTime;
-        if (userUpdate.statusKeyD()) camera.fYaw -= camera.rotationYSpeed * frameTime;
+        if (userUpdate.statusKeyA()) camera.fYaw += camera.rotationSpeed * frameTime;
+        if (userUpdate.statusKeyD()) camera.fYaw -= camera.rotationSpeed * frameTime;
 
         Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);
@@ -58,8 +61,8 @@ public class Output3d {
 
         viewMatrix = Matrix4x4.quickInverse(Matrix4x4.pointAt(camera.position, cameraTarget, cameraUp));
 
-        rotationMatrixZ.initRotationMatrixZ(frameTime);
-        rotationMatrixX.initRotationMatrixX(frameTime);
+        rotationMatrixZ = Matrix4x4.rotateZ(0.0f * 0.5f * elapsedTime);
+        rotationMatrixX = Matrix4x4.rotateX(0.0f * 0.25f * elapsedTime);
 
         for (Mesh mesh : meshes) {
 
@@ -131,7 +134,6 @@ public class Output3d {
                 }
                 glEnd();
             }
-
         }
     }
 

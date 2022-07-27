@@ -2,7 +2,7 @@ package Window;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public final class UserUpdate extends Window{
+public class UserUpdate extends Window{
 
     private static long window;
 

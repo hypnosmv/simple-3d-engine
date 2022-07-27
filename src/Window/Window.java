@@ -19,6 +19,10 @@ public class Window {
     private int height;
     private String title = "";
 
+    // Calculate frame timings (essential for proper movement and camera rotation)
+    private float prevFrameTime = 0.0f;
+    private float frameTime = 0.0f;
+
     // User update
     private UserUpdate userUpdate;
 
@@ -86,12 +90,14 @@ public class Window {
         GL.createCapabilities();
 
         while ( !glfwWindowShouldClose(window) ) {
+            this.frameTime = (float)glfwGetTime();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            output3d.display3d();
+            output3d.display3d(this.prevFrameTime);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
+            this.prevFrameTime = (float)glfwGetTime() - this.frameTime;
         }
     }
 }

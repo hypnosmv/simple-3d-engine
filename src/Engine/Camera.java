@@ -8,13 +8,13 @@ public class Camera {
     private float cameraNear = 0.1f;
     private float cameraFar = 1000.0f;
     private float FOV = 90.0f;
-    public Vector3f lookDirection = new Vector3f(0.0f, 0.0f, 0.0f);
-    public float moveSpeed = 1.0f;
-    public float rotationYSpeed = 0.005f;
+    public float moveSpeed = 300.0f;
+    public float rotationSpeed = 1.0f;
     public float fYaw = 0.0f;
 
-    // Position
+    // Position and look direction
     public Vector3f position = new Vector3f(0.0f, 0.0f, 0.0f);
+    public Vector3f lookDirection = new Vector3f(0.0f, 0.0f, 0.0f);
 
     public float getCameraNear() {
         return cameraNear;
