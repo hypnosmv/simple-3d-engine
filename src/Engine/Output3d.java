@@ -38,17 +38,17 @@ public class Output3d {
 
         float frameTime = (float)glfwGetTime();
 
-        if (userUpdate.statusKeyUp()) camera.position.y += camera.speed * frameTime;
-        if (userUpdate.statusKeyDown()) camera.position.y -= camera.speed * frameTime;
-        if (userUpdate.statusKeyLeft()) camera.position.x -= camera.speed * frameTime;
-        if (userUpdate.statusKeyRight()) camera.position.x += camera.speed * frameTime;
+        if (userUpdate.statusKeyUp()) camera.position.y += camera.moveSpeed * frameTime;
+        if (userUpdate.statusKeyDown()) camera.position.y -= camera.moveSpeed * frameTime;
+        if (userUpdate.statusKeyLeft()) camera.position.x -= camera.moveSpeed * frameTime;
+        if (userUpdate.statusKeyRight()) camera.position.x += camera.moveSpeed * frameTime;
 
-        Vector3f cameraForward = Vector3f.multiplyVector(camera.lookDirection, camera.speed * frameTime);
+        Vector3f cameraForward = Vector3f.multiplyVector(camera.lookDirection, camera.moveSpeed * frameTime);
         if (userUpdate.statusKeyW()) camera.position = Vector3f.addVectors(camera.position, cameraForward);
         if (userUpdate.statusKeyS()) camera.position = Vector3f.subtractVectors(camera.position, cameraForward);
 
-        if (userUpdate.statusKeyA()) camera.fYaw += frameTime / 100;
-        if (userUpdate.statusKeyD()) camera.fYaw -= frameTime / 100;
+        if (userUpdate.statusKeyA()) camera.fYaw += camera.rotationYSpeed * frameTime;
+        if (userUpdate.statusKeyD()) camera.fYaw -= camera.rotationYSpeed * frameTime;
 
         Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);

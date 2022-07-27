@@ -9,7 +9,8 @@ public class Camera {
     private float cameraFar = 1000.0f;
     private float FOV = 90.0f;
     public Vector3f lookDirection = new Vector3f(0.0f, 0.0f, 0.0f);
-    public float speed = 1.0f;
+    public float moveSpeed = 1.0f;
+    public float rotationYSpeed = 0.005f;
     public float fYaw = 0.0f;
 
     // Position
