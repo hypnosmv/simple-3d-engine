@@ -1,5 +1,6 @@
 package Engine;
 
+import Window.*;
 import java.util.ArrayList;
 
 import Utility.QuickSort;
@@ -8,6 +9,9 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Output3d {
+
+    // User input
+    private UserUpdate userUpdate = new UserUpdate();
 
     // 3d objects
     private ArrayList<Mesh> meshes = new ArrayList<>();
@@ -33,6 +37,26 @@ public class Output3d {
     public void display3d() {
 
         float frameTime = (float)glfwGetTime();
+
+        if (userUpdate.statusKeyUp()) camera.position.y += camera.speed * frameTime;
+        if (userUpdate.statusKeyDown()) camera.position.y -= camera.speed * frameTime;
+        if (userUpdate.statusKeyLeft()) camera.position.x -= camera.speed * frameTime;
+        if (userUpdate.statusKeyRight()) camera.position.x += camera.speed * frameTime;
+
+        Vector3f cameraForward = Vector3f.multiplyVector(camera.lookDirection, camera.speed * frameTime);
+        if (userUpdate.statusKeyW()) camera.position = Vector3f.addVectors(camera.position, cameraForward);
+        if (userUpdate.statusKeyS()) camera.position = Vector3f.subtractVectors(camera.position, cameraForward);
+
+        if (userUpdate.statusKeyA()) camera.fYaw += frameTime / 100;
+        if (userUpdate.statusKeyD()) camera.fYaw -= frameTime / 100;
+
+        Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
+        Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);
+        Matrix4x4 viewMatrix = Matrix4x4.rotateY(camera.fYaw);
+        camera.lookDirection = viewMatrix.multiply(cameraTarget);
+        cameraTarget = Vector3f.addVectors(camera.position, camera.lookDirection);
+
+        viewMatrix = Matrix4x4.quickInverse(Matrix4x4.pointAt(camera.position, cameraTarget, cameraUp));
 
         rotationMatrixZ.initRotationMatrixZ(frameTime);
         rotationMatrixX.initRotationMatrixX(frameTime);
@@ -64,7 +88,7 @@ public class Output3d {
                             secondVector.newVector(vectorTranslated);
                             break;
                         case 2:
-                            normal.crossProduct(new Vector3f(secondVector.x - firstVector.x, secondVector.y - firstVector.y, secondVector.z - firstVector.z), new Vector3f(vectorTranslated.x - firstVector.x, vectorTranslated.y - firstVector.y, vectorTranslated.z - firstVector.z));
+                            normal = Vector3f.crossProduct(new Vector3f(secondVector.x - firstVector.x, secondVector.y - firstVector.y, secondVector.z - firstVector.z), new Vector3f(vectorTranslated.x - firstVector.x, vectorTranslated.y - firstVector.y, vectorTranslated.z - firstVector.z));
                             normal.normalize();
                             break;
                     }
@@ -72,7 +96,8 @@ public class Output3d {
                     renderRequest.verts.add(new Vector3f(vectorTranslated.x, vectorTranslated.y, vectorTranslated.z));
                 }
 
-                if (normal.x * (firstVector.x - camera.position.x) +  normal.y * (firstVector.y - camera.position.y) + normal.z * (firstVector.z - camera.position.z) < 0) {
+                // Compare 2 vectors using dot product (taking into account the camera vector)
+                if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(firstVector, camera.position)) < 0) {
 
                     Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
 
@@ -92,6 +117,9 @@ public class Output3d {
             for (Face face : renderQueue) {
                 glBegin(GL_POLYGON);
                 for (Vector3f vector : face.verts) {
+
+                    // Convert world space into view space
+                    vector = viewMatrix.multiply(vector);
 
                     // Project onto the display using the projection matrix
                     vector = projectionMatrix.multiply(vector);

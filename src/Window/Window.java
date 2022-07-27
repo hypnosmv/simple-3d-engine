@@ -19,18 +19,22 @@ public class Window {
     private int height;
     private String title = "";
 
-    // Declaring 3d output
-    Output3d output3d;
+    // User update
+    private UserUpdate userUpdate;
+
+    // Declare 3d output
+    private Output3d output3d;
 
     public void runWindow(int width, int height, String title) {
         this.width = width;
         this.height = height;
         this.title = title;
 
+        userUpdate = new UserUpdate();
         output3d = new Output3d(this.width, this.height);
 
-        // Start and loop
         initWindow();
+        userUpdate.updateWindow(window);
         loopWindow();
 
         // Terminate
