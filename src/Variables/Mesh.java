@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Mesh {
-    public ArrayList<Face> faces = new ArrayList<>();
+    public ArrayList<Polygon> polygons = new ArrayList<>();
 
     public void inputOBJ(String file) {
 
@@ -67,7 +67,7 @@ public class Mesh {
                     }
                     else if (line.charAt(0) == 'f' && line.charAt(1) == ' ') {
 
-                        Face f = new Face();
+                        Polygon f = new Polygon();
                         StringBuilder numberString = new StringBuilder();
                         int numberInt;
                         int i = 1;
@@ -93,7 +93,7 @@ public class Mesh {
                         }
                         else {
 
-                            // Adding faces that store 3+ vectors
+                            // Add polygons that store 3+ vectors
                             while (i < line.length()) {
                                 // Get to index
                                 while (line.charAt(i) != '/') {
@@ -116,8 +116,8 @@ public class Mesh {
                             }
                         }
 
-                        // Finally, adding the face
-                        this.faces.add(f);
+                        // Finally, adding the polygon
+                        this.polygons.add(f);
                     }
                 }
             }

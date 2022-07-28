@@ -1,20 +1,20 @@
 package Utility;
 
-import Variables.Face;
+import Variables.Polygon;
 
 import java.util.ArrayList;
 
 public class QuickSort {
-    public static ArrayList<Face> quickSortFace(ArrayList<Face> list)
+    public static ArrayList<Polygon> quickSortPolygons(ArrayList<Polygon> list)
     {
         if (list.isEmpty())
             return list;
-        ArrayList<Face> sorted;
-        ArrayList<Face> smaller = new ArrayList<Face>();
-        ArrayList<Face> greater = new ArrayList<Face>();
-        Face pivot = list.get(0);
+        ArrayList<Polygon> sorted;
+        ArrayList<Polygon> smaller = new ArrayList<Polygon>();
+        ArrayList<Polygon> greater = new ArrayList<Polygon>();
+        Polygon pivot = list.get(0);
         int i;
-        Face j;
+        Polygon j;
         for (i=1;i<list.size();i++)
         {
             j=list.get(i);
@@ -23,8 +23,8 @@ public class QuickSort {
             else
                 greater.add(j);
         }
-        smaller= quickSortFace(smaller);
-        greater= quickSortFace(greater);
+        smaller= quickSortPolygons(smaller);
+        greater= quickSortPolygons(greater);
         smaller.add(pivot);
         smaller.addAll(greater);
         sorted = smaller;

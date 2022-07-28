@@ -2,7 +2,7 @@ package Variables;
 
 import java.util.ArrayList;
 
-public class Face {
+public class Polygon {
     public ArrayList<Vector3f> verts = new ArrayList<>();
     public float zDepth = 0.0f;
     public float color = 0.0f;

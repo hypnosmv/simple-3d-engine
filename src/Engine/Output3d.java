@@ -70,20 +70,20 @@ public class Output3d {
 
         for (Mesh mesh : meshes) {
 
-            ArrayList<Face> renderQueue = new ArrayList<>();
+            ArrayList<Polygon> renderQueue = new ArrayList<>();
 
-            for (Face face : mesh.faces) {
+            for (Polygon polygon : mesh.polygons) {
 
-                Face renderRequest = new Face();
+                Polygon renderRequest = new Polygon();
 
                 Vector3f firstVector = new Vector3f(0.0f, 0.0f, 0.0f);
                 Vector3f secondVector = new Vector3f(0.0f, 0.0f, 0.0f);
                 Vector3f normal = new Vector3f(0.0f, 0.0f, 0.0f);
 
-                for (int i = 0; i < face.verts.size(); i++) {
+                for (int i = 0; i < polygon.verts.size(); i++) {
 
                     // Ensuring that we don't overwrite vectors of the mesh
-                    Vector3f vectorTranslated = rotationMatrixZ.multiply(face.verts.get(i));
+                    Vector3f vectorTranslated = rotationMatrixZ.multiply(polygon.verts.get(i));
                     vectorTranslated = rotationMatrixX.multiply(vectorTranslated);
                     vectorTranslated.z += 600.0f;
 
@@ -106,12 +106,22 @@ public class Output3d {
                 // Compare 2 vectors using dot product (taking into account the camera vector)
                 if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(firstVector, camera.position)) < 0) {
 
+                    // Light vector
                     Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
                     lightDirection.normalize();
 
+                    // Light's color intensity
                     renderRequest.color = normal.x * lightDirection.x + normal.y * lightDirection.y + normal.z * lightDirection.z;
+
+                    // Convert world space into view space
+                    for (int i = 0; i < renderRequest.verts.size(); i++) {
+                        renderRequest.verts.set(i, viewMatrix.multiply(renderRequest.verts.get(i)));
+                    }
+
+                    // Calculate depth of Polygon
                     renderRequest.calculateZDepth();
 
+                    // Add it to the queue
                     renderQueue.add(renderRequest);
 
                 }
@@ -119,21 +129,18 @@ public class Output3d {
             }
 
             // Sort using z-depth (painter's algorithm)
-            renderQueue = QuickSort.quickSortFace(renderQueue);
+            renderQueue = QuickSort.quickSortPolygons(renderQueue);
 
-            // Draw faces of the mesh
-            for (Face face : renderQueue) {
+            // Draw polygons of the mesh
+            for (Polygon polygon : renderQueue) {
                 glBegin(GL_POLYGON);
-                for (Vector3f vector : face.verts) {
-
-                    // Convert world space into view space
-                    vector = viewMatrix.multiply(vector);
+                for (Vector3f vector : polygon.verts) {
 
                     // Project onto the display using the projection matrix
                     vector = projectionMatrix.multiply(vector);
 
                     // Color and display cords
-                    glColor3f(face.color, face.color, face.color);
+                    glColor3f(polygon.color, polygon.color, polygon.color);
                     glVertex2f(vector.x, vector.y);
 
                 }
