@@ -39,19 +39,23 @@ public class Output3d {
 
         float elapsedTime = (float)glfwGetTime();
 
-        if (userUpdate.statusKeyUp()) camera.position.y += camera.moveSpeed * frameTime;
-        if (userUpdate.statusKeyDown()) camera.position.y -= camera.moveSpeed * frameTime;
+        // Space - move up, left shift - move down
+        if (userUpdate.statusKeySpace()) camera.position.y += camera.moveSpeed * frameTime;
+        if (userUpdate.statusKeyLeftShift()) camera.position.y -= camera.moveSpeed * frameTime;
 
-        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.lookDirection.z, camera.lookDirection.y, camera.lookDirection.x), camera.moveSpeed * frameTime);
-        if (userUpdate.statusKeyLeft()) camera.position = Vector3f.addVectors(camera.position, cameraLeft);
-        if (userUpdate.statusKeyRight()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
-
+        // W - move forward, S - move backwards
         Vector3f cameraForward = Vector3f.multiplyVector(camera.lookDirection, camera.moveSpeed * frameTime);
         if (userUpdate.statusKeyW()) camera.position = Vector3f.addVectors(camera.position, cameraForward);
         if (userUpdate.statusKeyS()) camera.position = Vector3f.subtractVectors(camera.position, cameraForward);
 
-        if (userUpdate.statusKeyA()) camera.fYaw += camera.rotationSpeed * frameTime;
-        if (userUpdate.statusKeyD()) camera.fYaw -= camera.rotationSpeed * frameTime;
+        // A - move left, D - move right
+        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.lookDirection.z, camera.lookDirection.y, camera.lookDirection.x), camera.moveSpeed * frameTime);
+        if (userUpdate.statusKeyA()) camera.position = Vector3f.addVectors(camera.position, cameraLeft);
+        if (userUpdate.statusKeyD()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
+
+        // Q - rotate camera to the left, E - rotate camera to the right
+        if (userUpdate.statusKeyQ()) camera.fYaw += camera.rotationSpeed * frameTime;
+        if (userUpdate.statusKeyE()) camera.fYaw -= camera.rotationSpeed * frameTime;
 
         Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);
@@ -103,6 +107,7 @@ public class Output3d {
                 if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(firstVector, camera.position)) < 0) {
 
                     Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
+                    lightDirection.normalize();
 
                     renderRequest.color = normal.x * lightDirection.x + normal.y * lightDirection.y + normal.z * lightDirection.z;
                     renderRequest.calculateZDepth();

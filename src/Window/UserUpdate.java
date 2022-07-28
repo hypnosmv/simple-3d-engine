@@ -10,23 +10,13 @@ public class UserUpdate extends Window{
         this.window = window;
     }
 
-    public boolean statusKeyUp () {
-        if (glfwGetKey(this.window, GLFW_KEY_UP) == GLFW_TRUE) return Boolean.TRUE;
+    public boolean statusKeySpace () {
+        if (glfwGetKey(this.window, GLFW_KEY_SPACE) == GLFW_TRUE) return Boolean.TRUE;
         else return Boolean.FALSE;
     }
 
-    public boolean statusKeyDown () {
-        if (glfwGetKey(this.window, GLFW_KEY_DOWN) == GLFW_TRUE) return true;
-        else return false;
-    }
-
-    public boolean statusKeyLeft () {
-        if (glfwGetKey(this.window, GLFW_KEY_LEFT) == GLFW_TRUE) return true;
-        else return false;
-    }
-
-    public boolean statusKeyRight () {
-        if (glfwGetKey(this.window, GLFW_KEY_RIGHT) == GLFW_TRUE) return true;
+    public boolean statusKeyLeftShift () {
+        if (glfwGetKey(this.window, GLFW_KEY_LEFT_SHIFT) == GLFW_TRUE) return true;
         else return false;
     }
 
@@ -47,6 +37,16 @@ public class UserUpdate extends Window{
 
     public boolean statusKeyD () {
         if (glfwGetKey(this.window, GLFW_KEY_D) == GLFW_TRUE) return true;
+        else return false;
+    }
+
+    public boolean statusKeyQ () {
+        if (glfwGetKey(this.window, GLFW_KEY_Q) == GLFW_TRUE) return true;
+        else return false;
+    }
+
+    public boolean statusKeyE () {
+        if (glfwGetKey(this.window, GLFW_KEY_E) == GLFW_TRUE) return true;
         else return false;
     }
 
