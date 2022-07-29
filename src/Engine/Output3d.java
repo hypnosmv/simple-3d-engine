@@ -118,7 +118,11 @@ public class Output3d {
                         renderRequest.verts.set(i, viewMatrix.multiply(renderRequest.verts.get(i)));
                     }
 
-                    // Calculate depth of Polygon
+                    // View space trimming, we don't need to process window space trim,
+                    // because OpenGL doesn't draw outside the window
+                    renderRequest = Vector3f.clipAgainstPlane(new Vector3f(0.0f, 0.0f, 0.1f), new Vector3f(0.0f, 0.0f, 1.0f), renderRequest);
+
+                    // Calculate depth of polygon
                     renderRequest.calculateZDepth();
 
                     // Add it to the queue

@@ -31,4 +31,30 @@ public class QuickSort {
 
         return sorted;
     }
+
+    public static ArrayList<Integer> quickSortIndexes(ArrayList<Integer> list) {
+        if (list.isEmpty())
+            return list;
+        ArrayList<Integer> sorted;
+        ArrayList<Integer> smaller = new ArrayList<>();
+        ArrayList<Integer> greater = new ArrayList<>();
+        int pivot = list.get(0);
+        int i;
+        int j;
+        for (i=1;i<list.size();i++)
+        {
+            j=list.get(i);
+            if (j < pivot)
+                smaller.add(j);
+            else
+                greater.add(j);
+        }
+        smaller= quickSortIndexes(smaller);
+        greater= quickSortIndexes(greater);
+        smaller.add(pivot);
+        smaller.addAll(greater);
+        sorted = smaller;
+
+        return sorted;
+    }
 }
