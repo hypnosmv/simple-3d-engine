@@ -50,4 +50,14 @@ public class UserUpdate extends Window{
         else return false;
     }
 
+    public boolean statusKeyR () {
+        if (glfwGetKey(this.window, GLFW_KEY_R) == GLFW_TRUE) return true;
+        else return false;
+    }
+
+    public boolean statusKeyF () {
+        if (glfwGetKey(this.window, GLFW_KEY_F) == GLFW_TRUE) return true;
+        else return false;
+    }
+
 }

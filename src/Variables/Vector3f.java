@@ -18,6 +18,7 @@ public class Vector3f {
         this.z = z;
     }
 
+    // Normalize in non-static context
     public void normalize () {
         float length = 1 / (float)Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
 
@@ -26,6 +27,7 @@ public class Vector3f {
         this.z *= length;
     }
 
+    // Normalize in static context
     public static Vector3f staticNormalize (Vector3f vector) {
         float length = 1 / (float)Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 
@@ -113,27 +115,51 @@ public class Vector3f {
         int insidePointsCount = insidePointsIndexes.size();
         int outsidePointsCount = outsidePointsIndexes.size();
 
+        // If all points are inside, just return the input polygon
+        if (outsidePointsCount == 0) {
+            return polygon;
+        }
+
         // If all points are outside, just return a polygon
         // without any vectors and no vectors will be processed
         if (insidePointsCount == 0) {
             return new Polygon();
         }
 
+        // If only one point is outside, return a new polygon
+        // that adds one point to
+        if (outsidePointsCount == 1) {
+            // Initialization
+            Polygon newPolygon = new Polygon();
+
+            // Add all inside points
+            for (int i = 0; i < insidePointsCount; i++) {
+                newPolygon.verts.add(polygon.verts.get(insidePointsIndexes.get(i)));
+            }
+
+            // Add two points that were created by
+            // clipping the outside one
+            newPolygon.verts.add(Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(insidePointsCount - 1)), polygon.verts.get(outsidePointsIndexes.get(0))));
+            newPolygon.verts.add(Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(0)), polygon.verts.get(outsidePointsIndexes.get(outsidePointsCount - 1))));
+
+            return newPolygon;
+        }
+
         // If some points are inside and some outside, we need to
         // properly trim the exact two sides that intersect
         if (insidePointsCount != polygon.verts.size()) {
 
-            polygon.verts.set(outsidePointsIndexes.get(0), Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(0)), polygon.verts.get(outsidePointsIndexes.get(0))));
-            polygon.verts.set(outsidePointsIndexes.get(outsidePointsCount - 1), Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(insidePointsCount - 1)), polygon.verts.get(outsidePointsIndexes.get(outsidePointsCount - 1))));
+            // Clip the outside point with index 0
+            // and clip the one with index (size-1)
+            polygon.verts.set(outsidePointsIndexes.get(0), Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(insidePointsCount - 1)), polygon.verts.get(outsidePointsIndexes.get(0))));
+            polygon.verts.set(outsidePointsIndexes.get(outsidePointsCount - 1), Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(0)), polygon.verts.get(outsidePointsIndexes.get(outsidePointsCount - 1))));
 
             // Here should be a loop that removes (.remove()) the not-trimmed vectors outside (3+ vector polygon case),
             // but OpenGL doesn't draw outside the window, so it's all fine for the performance
 
-            // Gaps in the mesh will be resolved in next commit
-
         }
 
-        // If all points are inside, just return the input polygon
+        // If something goes wrong, just return the original one
         return polygon;
     }
 

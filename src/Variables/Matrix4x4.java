@@ -70,6 +70,14 @@ public class Matrix4x4 {
         return matrix;
     }
 
+    public static Matrix4x4 multiplyMat4x4Mat4x4 (Matrix4x4 matrix1, Matrix4x4 matrix2) {
+        Matrix4x4 matrix = new Matrix4x4();
+        for (int c = 0; c < 4; c++)
+            for (int r = 0; r < 4; r++)
+                matrix.m[r][c] = matrix1.m[r][0] * matrix2.m[0][c] + matrix1.m[r][1] * matrix2.m[1][c] + matrix1.m[r][2] * matrix2.m[2][c] + matrix1.m[r][3] * matrix2.m[3][c];
+        return matrix;
+    }
+
     public static Matrix4x4 pointAt (Vector3f position, Vector3f target, Vector3f up) {
 
         // Calculate new forward direction

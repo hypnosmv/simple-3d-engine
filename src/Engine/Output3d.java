@@ -20,6 +20,9 @@ public class Output3d {
     // Projection matrix
     private Matrix4x4 projectionMatrix = new Matrix4x4();
 
+    // View matrix
+    private Matrix4x4 viewMatrix = new Matrix4x4();
+
     // Rotation matrices
     Matrix4x4 rotationMatrixZ = new Matrix4x4();
     Matrix4x4 rotationMatrixX = new Matrix4x4();
@@ -43,15 +46,28 @@ public class Output3d {
         if (userUpdate.statusKeySpace()) camera.position.y += camera.moveSpeed * frameTime;
         if (userUpdate.statusKeyLeftShift()) camera.position.y -= camera.moveSpeed * frameTime;
 
+        // Take into account multiplication of camera move speed by sqrt(2)
+        float cameraMoveSpeed = camera.moveSpeed;
+        if ((userUpdate.statusKeyW() && userUpdate.statusKeyD()) || (userUpdate.statusKeyD() && userUpdate.statusKeyS()) ||
+                (userUpdate.statusKeyS() && userUpdate.statusKeyA()) || (userUpdate.statusKeyA() && userUpdate.statusKeyW())) {
+            // 1 / sqrt(2) = 0.70710678
+            cameraMoveSpeed *= 0.70710678f;
+        }
+
         // W - move forward, S - move backwards
-        Vector3f cameraForward = Vector3f.multiplyVector(camera.lookDirection, camera.moveSpeed * frameTime);
+        Vector3f cameraForward = Vector3f.multiplyVector(camera.lookDirection, cameraMoveSpeed * frameTime);
         if (userUpdate.statusKeyW()) camera.position = Vector3f.addVectors(camera.position, cameraForward);
         if (userUpdate.statusKeyS()) camera.position = Vector3f.subtractVectors(camera.position, cameraForward);
 
         // A - move left, D - move right
-        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.lookDirection.z, camera.lookDirection.y, camera.lookDirection.x), camera.moveSpeed * frameTime);
+        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.lookDirection.z, camera.lookDirection.y, camera.lookDirection.x), cameraMoveSpeed * frameTime);
         if (userUpdate.statusKeyA()) camera.position = Vector3f.addVectors(camera.position, cameraLeft);
         if (userUpdate.statusKeyD()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
+
+        // R - rotate camera up, F - rotate camera down
+        if (userUpdate.statusKeyR()) camera.fXaw -= camera.rotationSpeed * frameTime;
+        if (userUpdate.statusKeyF()) camera.fXaw += camera.rotationSpeed * frameTime;
+        camera.checkFXaw();
 
         // Q - rotate camera to the left, E - rotate camera to the right
         if (userUpdate.statusKeyQ()) camera.fYaw += camera.rotationSpeed * frameTime;
@@ -59,14 +75,14 @@ public class Output3d {
 
         Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);
-        Matrix4x4 viewMatrix = Matrix4x4.rotateY(camera.fYaw);
+        viewMatrix = Matrix4x4.multiplyMat4x4Mat4x4(Matrix4x4.rotateX(camera.fXaw), Matrix4x4.rotateY(camera.fYaw));
         camera.lookDirection = viewMatrix.multiply(cameraTarget);
         cameraTarget = Vector3f.addVectors(camera.position, camera.lookDirection);
 
         viewMatrix = Matrix4x4.quickInverse(Matrix4x4.pointAt(camera.position, cameraTarget, cameraUp));
 
-        rotationMatrixZ = Matrix4x4.rotateZ(0.0f * 0.5f * elapsedTime);
-        rotationMatrixX = Matrix4x4.rotateX(0.0f * 0.25f * elapsedTime);
+        rotationMatrixZ = Matrix4x4.rotateZ(0.25f * elapsedTime);
+        rotationMatrixX = Matrix4x4.rotateX(0.125f * elapsedTime);
 
         for (Mesh mesh : meshes) {
 
@@ -85,7 +101,6 @@ public class Output3d {
                     // Ensuring that we don't overwrite vectors of the mesh
                     Vector3f vectorTranslated = rotationMatrixZ.multiply(polygon.verts.get(i));
                     vectorTranslated = rotationMatrixX.multiply(vectorTranslated);
-                    vectorTranslated.z += 600.0f;
 
                     switch(i) {
                         case 0:
