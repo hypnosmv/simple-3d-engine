@@ -6,6 +6,7 @@ Note: The project was created to show how to display 3d models onto the screen. 
 
 Current state:
   - WSAD camera movement, QERF camera rotation
+  - LShift/Space vertical movement
   - polygon clipping
   - camera light is flashlight alike
   - partially documented
