@@ -11,3 +11,4 @@ Current state:
   - camera light is flashlight alike
   - partially documented
   - need for optimization
+  - reads .obj files
