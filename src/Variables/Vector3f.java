@@ -129,6 +129,7 @@ public class Vector3f {
         // If only one point is outside, return a new polygon
         // that contains an additional point
         if (outsidePointsCount == 1) {
+
             // Initialization
             Polygon newPolygon = new Polygon();
 
