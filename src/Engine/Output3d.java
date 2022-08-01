@@ -106,13 +106,6 @@ public class Output3d {
                 // Compare 2 vectors using dot product (taking into account the camera vector)
                 if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(firstVector, camera.position)) < 0) {
 
-                    // Light vector
-                    Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
-                    lightDirection.normalize();
-
-                    // Light's color intensity
-                    renderRequest.color = normal.x * lightDirection.x + normal.y * lightDirection.y + normal.z * lightDirection.z;
-
                     // Convert world space into view space
                     for (int i = 0; i < renderRequest.verts.size(); i++) {
                         renderRequest.verts.set(i, viewMatrix.multiply(renderRequest.verts.get(i)));
@@ -121,6 +114,9 @@ public class Output3d {
                     // View space trimming, we don't need to process window space trim,
                     // because OpenGL doesn't draw outside the window
                     renderRequest = Vector3f.clipAgainstPlane(new Vector3f(0.0f, 0.0f, 0.1f), new Vector3f(0.0f, 0.0f, 1.0f), renderRequest);
+
+                    // Light's color intensity (very primitive)
+                    renderRequest.color = - normal.x * camera.lookDirection.x - normal.y * camera.lookDirection.y - normal.z * camera.lookDirection.z;
 
                     // Calculate depth of polygon
                     renderRequest.calculateZDepth();
