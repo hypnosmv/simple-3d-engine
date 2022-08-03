@@ -92,34 +92,17 @@ public class Output3d {
 
                 Polygon renderRequest = new Polygon();
 
-                Vector3f firstVector = new Vector3f(0.0f, 0.0f, 0.0f);
-                Vector3f secondVector = new Vector3f(0.0f, 0.0f, 0.0f);
-                Vector3f normal = new Vector3f(0.0f, 0.0f, 0.0f);
-
-                for (int i = 0; i < polygon.verts.size(); i++) {
-
-                    // Ensuring that we don't overwrite vectors of the mesh
-                    Vector3f vectorTranslated = rotationMatrixZ.multiply(polygon.verts.get(i));
-                    vectorTranslated = rotationMatrixX.multiply(vectorTranslated);
-
-                    switch(i) {
-                        case 0:
-                            firstVector.newVector(vectorTranslated);
-                            break;
-                        case 1:
-                            secondVector.newVector(vectorTranslated);
-                            break;
-                        case 2:
-                            normal = Vector3f.crossProduct(new Vector3f(secondVector.x - firstVector.x, secondVector.y - firstVector.y, secondVector.z - firstVector.z), new Vector3f(vectorTranslated.x - firstVector.x, vectorTranslated.y - firstVector.y, vectorTranslated.z - firstVector.z));
-                            normal.normalize();
-                            break;
-                    }
-
-                    renderRequest.verts.add(new Vector3f(vectorTranslated.x, vectorTranslated.y, vectorTranslated.z));
+                for(int i = 0; i < polygon.verts.size(); i++) {
+                    renderRequest.verts.add(polygon.verts.get(i));
+                    //renderRequest.verts.set(i, rotationMatrixZ.multiply(renderRequest.verts.get(i)));
+                    //renderRequest.verts.set(i, rotationMatrixX.multiply(renderRequest.verts.get(i)));
                 }
 
+                Vector3f normal = Vector3f.crossProduct(new Vector3f(renderRequest.verts.get(1).x - renderRequest.verts.get(0).x, renderRequest.verts.get(1).y - renderRequest.verts.get(0).y, renderRequest.verts.get(1).z - renderRequest.verts.get(0).z), new Vector3f(renderRequest.verts.get(2).x - renderRequest.verts.get(0).x, renderRequest.verts.get(2).y - renderRequest.verts.get(0).y, renderRequest.verts.get(2).z - renderRequest.verts.get(0).z));
+                normal.normalize();
+
                 // Compare 2 vectors using dot product (taking into account the camera vector)
-                if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(firstVector, camera.position)) < 0) {
+                if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(renderRequest.verts.get(0), camera.position)) < 0) {
 
                     // Convert world space into view space
                     for (int i = 0; i < renderRequest.verts.size(); i++) {
