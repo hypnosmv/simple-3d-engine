@@ -94,8 +94,8 @@ public class Output3d {
 
                 for(int i = 0; i < polygon.verts.size(); i++) {
                     renderRequest.verts.add(polygon.verts.get(i));
-                    //renderRequest.verts.set(i, rotationMatrixZ.multiply(renderRequest.verts.get(i)));
-                    //renderRequest.verts.set(i, rotationMatrixX.multiply(renderRequest.verts.get(i)));
+                    renderRequest.verts.set(i, rotationMatrixZ.multiply(renderRequest.verts.get(i)));
+                    renderRequest.verts.set(i, rotationMatrixX.multiply(renderRequest.verts.get(i)));
                 }
 
                 Vector3f normal = Vector3f.crossProduct(new Vector3f(renderRequest.verts.get(1).x - renderRequest.verts.get(0).x, renderRequest.verts.get(1).y - renderRequest.verts.get(0).y, renderRequest.verts.get(1).z - renderRequest.verts.get(0).z), new Vector3f(renderRequest.verts.get(2).x - renderRequest.verts.get(0).x, renderRequest.verts.get(2).y - renderRequest.verts.get(0).y, renderRequest.verts.get(2).z - renderRequest.verts.get(0).z));
