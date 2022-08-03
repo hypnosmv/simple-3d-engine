@@ -55,12 +55,12 @@ public class Output3d {
         }
 
         // W - move forward, S - move backwards
-        Vector3f cameraForward = Vector3f.multiplyVector(camera.lookDirection, cameraMoveSpeed * frameTime);
+        Vector3f cameraForward = Vector3f.multiplyVector(new Vector3f(camera.lookDirection.x, 0.0f, camera.lookDirection.z), cameraMoveSpeed * frameTime);
         if (userUpdate.statusKeyW()) camera.position = Vector3f.addVectors(camera.position, cameraForward);
         if (userUpdate.statusKeyS()) camera.position = Vector3f.subtractVectors(camera.position, cameraForward);
 
         // A - move left, D - move right
-        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.lookDirection.z, camera.lookDirection.y, camera.lookDirection.x), cameraMoveSpeed * frameTime);
+        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.lookDirection.z, 0.0f, camera.lookDirection.x), cameraMoveSpeed * frameTime);
         if (userUpdate.statusKeyA()) camera.position = Vector3f.addVectors(camera.position, cameraLeft);
         if (userUpdate.statusKeyD()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
 
