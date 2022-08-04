@@ -1,6 +1,7 @@
 package Engine;
 
 import Window.*;
+
 import java.util.ArrayList;
 
 import Utility.QuickSort;
@@ -46,8 +47,7 @@ public class Output3d {
         keyboardInput();
 
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);
-        viewMatrix = Matrix4x4.multiplyMat4x4Mat4x4(Matrix4x4.rotateX(camera.fXaw), Matrix4x4.rotateY(camera.fYaw));
-        camera.lookDirection = viewMatrix.multiply(cameraTarget);
+        camera.lookDirection = Matrix4x4.multiplyMat4x4Mat4x4(Matrix4x4.rotateX(camera.fXaw), Matrix4x4.rotateY(camera.fYaw)).multiply(cameraTarget);
         cameraTarget = Vector3f.addVectors(camera.position, camera.lookDirection);
 
         // Get independent of fXaw look direction vector
@@ -144,14 +144,11 @@ public class Output3d {
         if (userUpdate.statusKeyA()) camera.position = Vector3f.addVectors(camera.position, cameraLeft);
         if (userUpdate.statusKeyD()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
 
-        // R - rotate camera up, F - rotate camera down
-        if (userUpdate.statusKeyR()) camera.fXaw -= camera.rotationSpeed * this.frameTime;
-        if (userUpdate.statusKeyF()) camera.fXaw += camera.rotationSpeed * this.frameTime;
+        // Mouse camera rotation
+        camera.fXaw += userUpdate.getCursorPosX() * camera.rotationSpeed * this.frameTime;
         camera.checkFXaw();
+        camera.fYaw += userUpdate.getCursorPosY() * camera.rotationSpeed * this.frameTime;
 
-        // Q - rotate camera to the left, E - rotate camera to the right
-        if (userUpdate.statusKeyQ()) camera.fYaw += camera.rotationSpeed * this.frameTime;
-        if (userUpdate.statusKeyE()) camera.fYaw -= camera.rotationSpeed * this.frameTime;
     }
 
     // Add a new mesh

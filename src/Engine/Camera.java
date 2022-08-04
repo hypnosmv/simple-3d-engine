@@ -8,8 +8,8 @@ public class Camera {
     private float cameraNear = 0.1f;
     private float cameraFar = 1000.0f;
     private float FOV = 90.0f;
-    public float moveSpeed = 100.0f;
-    public float rotationSpeed = 1.0f;
+    public float moveSpeed = 50.0f;
+    public float rotationSpeed = 0.02f;
     public float fXaw = 0.0f;
     public float fYaw = 0.0f;
 
@@ -34,7 +34,7 @@ public class Camera {
     public void checkFXaw() {
 
         // Somehow something bigger than 2 works and camera doesn't flip, happens
-        float halfPI = (float)Math.PI / 2.01f;
+        float halfPI = (float)Math.PI / 2.001f;
 
         // Don't let the camera rotate through your head and legs
         if (this.fXaw < -halfPI) this.fXaw = -halfPI;

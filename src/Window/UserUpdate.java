@@ -1,14 +1,37 @@
 package Window;
 
+import org.lwjgl.BufferUtils;
+
+import java.nio.DoubleBuffer;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public class UserUpdate extends Window{
 
     private static long window;
+    private double currentCursorPosX = 0.0;
+    private double currentCursorPosY = 0.0;
 
     protected void updateWindow(long window) {
         this.window = window;
     }
+
+    public float getCursorPosX() {
+        DoubleBuffer posX = BufferUtils.createDoubleBuffer(1);
+        glfwGetCursorPos(this.window, null, posX);
+        double output = posX.get(0) - currentCursorPosX;
+        currentCursorPosX = posX.get(0);
+        return (float)output;
+    }
+
+    public float getCursorPosY() {
+        DoubleBuffer posY = BufferUtils.createDoubleBuffer(1);
+        glfwGetCursorPos(this.window, posY, null);
+        double output = currentCursorPosY - posY.get(0);
+        currentCursorPosY = posY.get(0);
+        return (float)output;
+    }
+
 
     public boolean statusKeySpace () {
         if (glfwGetKey(this.window, GLFW_KEY_SPACE) == GLFW_TRUE) return Boolean.TRUE;
@@ -39,25 +62,4 @@ public class UserUpdate extends Window{
         if (glfwGetKey(this.window, GLFW_KEY_D) == GLFW_TRUE) return true;
         else return false;
     }
-
-    public boolean statusKeyQ () {
-        if (glfwGetKey(this.window, GLFW_KEY_Q) == GLFW_TRUE) return true;
-        else return false;
-    }
-
-    public boolean statusKeyE () {
-        if (glfwGetKey(this.window, GLFW_KEY_E) == GLFW_TRUE) return true;
-        else return false;
-    }
-
-    public boolean statusKeyR () {
-        if (glfwGetKey(this.window, GLFW_KEY_R) == GLFW_TRUE) return true;
-        else return false;
-    }
-
-    public boolean statusKeyF () {
-        if (glfwGetKey(this.window, GLFW_KEY_F) == GLFW_TRUE) return true;
-        else return false;
-    }
-
 }
