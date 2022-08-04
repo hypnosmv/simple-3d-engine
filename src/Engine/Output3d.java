@@ -131,7 +131,7 @@ public class Output3d {
         if ((userUpdate.statusKeyW() && userUpdate.statusKeyD()) || (userUpdate.statusKeyD() && userUpdate.statusKeyS()) ||
                 (userUpdate.statusKeyS() && userUpdate.statusKeyA()) || (userUpdate.statusKeyA() && userUpdate.statusKeyW())) {
             // 1 / sqrt(2) = 0.70710678
-            //cameraMoveSpeed *= 0.70710678f;
+            cameraMoveSpeed *= 0.70710678f;
         }
 
         // W - move forward, S - move backwards
