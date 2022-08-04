@@ -17,6 +17,8 @@ public class Camera {
     public Vector3f position = new Vector3f(0.0f, 0.0f, 0.0f);
     public Vector3f lookDirection = new Vector3f(0.0f, 0.0f, 0.0f);
 
+    public Vector3f moveDirection  = new Vector3f(0.0f, 0.0f, 0.0f);
+
     public float getCameraNear() {
         return cameraNear;
     }

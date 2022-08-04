@@ -23,12 +23,11 @@ public class Output3d {
     // View matrix
     private Matrix4x4 viewMatrix = new Matrix4x4();
 
-    // Rotation matrices
-    Matrix4x4 rotationMatrixZ = new Matrix4x4();
-    Matrix4x4 rotationMatrixX = new Matrix4x4();
-
     // Camera
-    Camera camera = new Camera();
+    private Camera camera = new Camera();
+
+    // Frame time
+    private float frameTime = 0.0f;
 
     // Constructor
     public Output3d(int viewWidth, int viewHeight) {
@@ -40,64 +39,38 @@ public class Output3d {
     // Loop process
     public void display3d(float frameTime) {
 
+        this.frameTime = frameTime;
         float elapsedTime = (float)glfwGetTime();
 
-        // Space - move up, left shift - move down
-        if (userUpdate.statusKeySpace()) camera.position.y += camera.moveSpeed * frameTime;
-        if (userUpdate.statusKeyLeftShift()) camera.position.y -= camera.moveSpeed * frameTime;
 
-        // Take into account multiplication of camera move speed by sqrt(2)
-        float cameraMoveSpeed = camera.moveSpeed;
-        if ((userUpdate.statusKeyW() && userUpdate.statusKeyD()) || (userUpdate.statusKeyD() && userUpdate.statusKeyS()) ||
-                (userUpdate.statusKeyS() && userUpdate.statusKeyA()) || (userUpdate.statusKeyA() && userUpdate.statusKeyW())) {
-            // 1 / sqrt(2) = 0.70710678
-            cameraMoveSpeed *= 0.70710678f;
-        }
+        keyboardInput();
 
-        // W - move forward, S - move backwards
-        Vector3f cameraForward = Vector3f.multiplyVector(new Vector3f(camera.lookDirection.x, 0.0f, camera.lookDirection.z), cameraMoveSpeed * frameTime);
-        if (userUpdate.statusKeyW()) camera.position = Vector3f.addVectors(camera.position, cameraForward);
-        if (userUpdate.statusKeyS()) camera.position = Vector3f.subtractVectors(camera.position, cameraForward);
-
-        // A - move left, D - move right
-        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.lookDirection.z, 0.0f, camera.lookDirection.x), cameraMoveSpeed * frameTime);
-        if (userUpdate.statusKeyA()) camera.position = Vector3f.addVectors(camera.position, cameraLeft);
-        if (userUpdate.statusKeyD()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
-
-        // R - rotate camera up, F - rotate camera down
-        if (userUpdate.statusKeyR()) camera.fXaw -= camera.rotationSpeed * frameTime;
-        if (userUpdate.statusKeyF()) camera.fXaw += camera.rotationSpeed * frameTime;
-        camera.checkFXaw();
-
-        // Q - rotate camera to the left, E - rotate camera to the right
-        if (userUpdate.statusKeyQ()) camera.fYaw += camera.rotationSpeed * frameTime;
-        if (userUpdate.statusKeyE()) camera.fYaw -= camera.rotationSpeed * frameTime;
-
-        Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);
         viewMatrix = Matrix4x4.multiplyMat4x4Mat4x4(Matrix4x4.rotateX(camera.fXaw), Matrix4x4.rotateY(camera.fYaw));
         camera.lookDirection = viewMatrix.multiply(cameraTarget);
         cameraTarget = Vector3f.addVectors(camera.position, camera.lookDirection);
 
-        viewMatrix = Matrix4x4.quickInverse(Matrix4x4.pointAt(camera.position, cameraTarget, cameraUp));
+        // Get independent of fXaw look direction vector
+        // Move direction vector is used only for WSAD movement
+        camera.moveDirection.x = camera.lookDirection.x;
+        camera.moveDirection.z = camera.lookDirection.z;
+        camera.moveDirection.normalize();
 
-        rotationMatrixZ = Matrix4x4.rotateZ(0.25f * elapsedTime);
-        rotationMatrixX = Matrix4x4.rotateX(0.125f * elapsedTime);
+        viewMatrix = Matrix4x4.quickInverse(Matrix4x4.pointAt(camera.position, cameraTarget, new Vector3f(0.0f, 1.0f, 0.0f)));
 
-        for (Mesh mesh : meshes) {
+        for (int mesh = 0; mesh < meshes.size(); mesh++) {
 
             ArrayList<Polygon> renderQueue = new ArrayList<>();
 
-            for (Polygon polygon : mesh.polygons) {
+            for (int polygon = 0; polygon < meshes.get(mesh).polygons.size(); polygon++) {
 
                 Polygon renderRequest = new Polygon();
 
-                for(int i = 0; i < polygon.verts.size(); i++) {
-                    renderRequest.verts.add(polygon.verts.get(i));
-                    renderRequest.verts.set(i, rotationMatrixZ.multiply(renderRequest.verts.get(i)));
-                    renderRequest.verts.set(i, rotationMatrixX.multiply(renderRequest.verts.get(i)));
+                for(int i = 0; i < meshes.get(mesh).polygons.get(polygon).verts.size(); i++) {
+                    renderRequest.verts.add(meshes.get(mesh).polygons.get(polygon).verts.get(i));
                 }
 
+                // Find normal to polygon plane
                 Vector3f normal = Vector3f.crossProduct(new Vector3f(renderRequest.verts.get(1).x - renderRequest.verts.get(0).x, renderRequest.verts.get(1).y - renderRequest.verts.get(0).y, renderRequest.verts.get(1).z - renderRequest.verts.get(0).z), new Vector3f(renderRequest.verts.get(2).x - renderRequest.verts.get(0).x, renderRequest.verts.get(2).y - renderRequest.verts.get(0).y, renderRequest.verts.get(2).z - renderRequest.verts.get(0).z));
                 normal.normalize();
 
@@ -145,6 +118,40 @@ public class Output3d {
                 glEnd();
             }
         }
+    }
+
+    // Movement handling
+    private void keyboardInput() {
+        // Space - move up, left shift - move down
+        if (userUpdate.statusKeySpace()) camera.position.y += camera.moveSpeed * this.frameTime;
+        if (userUpdate.statusKeyLeftShift()) camera.position.y -= camera.moveSpeed * this.frameTime;
+
+        // Take into account multiplication of camera move speed by sqrt(2)
+        float cameraMoveSpeed = camera.moveSpeed;
+        if ((userUpdate.statusKeyW() && userUpdate.statusKeyD()) || (userUpdate.statusKeyD() && userUpdate.statusKeyS()) ||
+                (userUpdate.statusKeyS() && userUpdate.statusKeyA()) || (userUpdate.statusKeyA() && userUpdate.statusKeyW())) {
+            // 1 / sqrt(2) = 0.70710678
+            //cameraMoveSpeed *= 0.70710678f;
+        }
+
+        // W - move forward, S - move backwards
+        Vector3f cameraForward = Vector3f.multiplyVector(new Vector3f(camera.moveDirection.x, 0.0f, camera.moveDirection.z), cameraMoveSpeed * this.frameTime);
+        if (userUpdate.statusKeyW()) camera.position = Vector3f.addVectors(camera.position, cameraForward);
+        if (userUpdate.statusKeyS()) camera.position = Vector3f.subtractVectors(camera.position, cameraForward);
+
+        // A - move left, D - move right
+        Vector3f cameraLeft = Vector3f.multiplyVector(new Vector3f(-camera.moveDirection.z, 0.0f, camera.moveDirection.x), cameraMoveSpeed * this.frameTime);
+        if (userUpdate.statusKeyA()) camera.position = Vector3f.addVectors(camera.position, cameraLeft);
+        if (userUpdate.statusKeyD()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
+
+        // R - rotate camera up, F - rotate camera down
+        if (userUpdate.statusKeyR()) camera.fXaw -= camera.rotationSpeed * this.frameTime;
+        if (userUpdate.statusKeyF()) camera.fXaw += camera.rotationSpeed * this.frameTime;
+        camera.checkFXaw();
+
+        // Q - rotate camera to the left, E - rotate camera to the right
+        if (userUpdate.statusKeyQ()) camera.fYaw += camera.rotationSpeed * this.frameTime;
+        if (userUpdate.statusKeyE()) camera.fYaw -= camera.rotationSpeed * this.frameTime;
     }
 
     // Add a new mesh
