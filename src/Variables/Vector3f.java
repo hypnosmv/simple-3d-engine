@@ -155,9 +155,6 @@ public class Vector3f {
             polygon.verts.set(outsidePointsIndexes.get(0), Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(insidePointsCount - 1)), polygon.verts.get(outsidePointsIndexes.get(0))));
             polygon.verts.set(outsidePointsIndexes.get(outsidePointsCount - 1), Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(0)), polygon.verts.get(outsidePointsIndexes.get(outsidePointsCount - 1))));
 
-            // Here should be a loop that removes (.remove()) the not-trimmed vectors outside (3+ vector polygon case),
-            // but OpenGL doesn't draw outside the window, so it's all fine for the performance
-
         }
 
         // If something goes wrong, just return the original one

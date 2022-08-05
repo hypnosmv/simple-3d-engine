@@ -33,7 +33,7 @@ public class Camera {
 
     public void checkFXaw() {
 
-        // Somehow something bigger than 2 works and camera doesn't flip, happens
+        // Somehow something bigger than 2 works and camera doesn't flip
         float halfPI = (float)Math.PI / 2.001f;
 
         // Don't let the camera rotate through your head and legs
