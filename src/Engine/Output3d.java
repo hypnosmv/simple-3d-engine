@@ -43,7 +43,6 @@ public class Output3d {
         this.frameTime = frameTime;
         float elapsedTime = (float)glfwGetTime();
 
-
         keyboardInput();
 
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);
@@ -66,9 +65,7 @@ public class Output3d {
 
                 Polygon renderRequest = new Polygon();
 
-                for(int i = 0; i < meshes.get(mesh).polygons.get(polygon).verts.size(); i++) {
-                    renderRequest.verts.add(meshes.get(mesh).polygons.get(polygon).verts.get(i));
-                }
+                renderRequest.verts.addAll(meshes.get(mesh).polygons.get(polygon).verts);
 
                 // Find normal to polygon plane
                 Vector3f normal = Vector3f.crossProduct(new Vector3f(renderRequest.verts.get(1).x - renderRequest.verts.get(0).x, renderRequest.verts.get(1).y - renderRequest.verts.get(0).y, renderRequest.verts.get(1).z - renderRequest.verts.get(0).z), new Vector3f(renderRequest.verts.get(2).x - renderRequest.verts.get(0).x, renderRequest.verts.get(2).y - renderRequest.verts.get(0).y, renderRequest.verts.get(2).z - renderRequest.verts.get(0).z));
