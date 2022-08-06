@@ -67,7 +67,7 @@ public class Mesh {
                     }
                     else if (line.charAt(0) == 'f' && line.charAt(1) == ' ') {
 
-                        Polygon f = new Polygon();
+                        Polygon polygon = new Polygon();
                         StringBuilder numberString = new StringBuilder();
                         int numberInt;
                         int i = 1;
@@ -77,7 +77,9 @@ public class Mesh {
 
                         // Different formats
                         if (!line.contains("/")) {
-                            /*while (i < line.length()) {
+                            int vector = 0;
+                            Vector3f buffer = new Vector3f(0.0f, 0.0f, 0.0f);
+                            while (i < line.length()) {
                                 // Get to index
                                 for (; i < line.length(); i++) {
                                     if (line.charAt(i) == ' ') break;
@@ -87,15 +89,33 @@ public class Mesh {
                                 // Get the index
                                 numberInt = Integer.parseInt(numberString.toString());
                                 numberString = new StringBuilder();
-                                //f.verts.add(vecs.get(numberInt - 1));
-                                System.out.println(vecs.get(numberInt - 1).x + " " + vecs.get(numberInt - 1).y + " " + vecs.get(numberInt - 1).z);
+                                if (vector < 2) {
+                                    polygon.verts[vector] = vecs.get(numberInt - 1);
+                                    vector++;
+                                }
+                                else if (vector == 2) {
+                                    polygon.verts[vector] = vecs.get(numberInt - 1);
+                                    vector++;
+                                    this.polygons.add(polygon);
+                                    buffer.newVector(polygon.verts[2]);
+                                }
+                                else {
+                                    Polygon newPolygon = new Polygon();
+                                    newPolygon.verts[0].newVector(polygon.verts[0]);
+                                    newPolygon.verts[1].newVector(buffer);
+                                    newPolygon.verts[2].newVector(vecs.get(numberInt - 1));
+                                    this.polygons.add(newPolygon);
+                                    buffer.newVector(newPolygon.verts[2]);
+                                }
+
                                 i++;
-                            }*/
+                            }
                         }
                         else {
 
                             // Add polygons that store 3+ vectors
                             int vector = 0;
+                            Vector3f buffer = new Vector3f(0.0f, 0.0f, 0.0f);
                             while (i < line.length()) {
                                 // Get to index
                                 while (line.charAt(i) != '/') {
@@ -106,8 +126,24 @@ public class Mesh {
                                 // Get the index
                                 numberInt = Integer.parseInt(numberString.toString());
                                 numberString = new StringBuilder();
-                                f.verts[vector] = vecs.get(numberInt - 1);
-                                vector++;
+                                if (vector < 2) {
+                                    polygon.verts[vector] = vecs.get(numberInt - 1);
+                                    vector++;
+                                }
+                                else if (vector == 2) {
+                                    polygon.verts[vector] = vecs.get(numberInt - 1);
+                                    vector++;
+                                    this.polygons.add(polygon);
+                                    buffer.newVector(polygon.verts[2]);
+                                }
+                                else {
+                                    Polygon newPolygon = new Polygon();
+                                    newPolygon.verts[0].newVector(polygon.verts[0]);
+                                    newPolygon.verts[1].newVector(buffer);
+                                    newPolygon.verts[2].newVector(vecs.get(numberInt - 1));
+                                    this.polygons.add(newPolygon);
+                                    buffer.newVector(newPolygon.verts[2]);
+                                }
 
                                 // Go further or end
                                 while (line.charAt(i) == '/' || Character.isDigit(line.charAt(i))) {
@@ -118,9 +154,6 @@ public class Mesh {
                                 i++;
                             }
                         }
-
-                        // Finally, adding the polygon
-                        this.polygons.add(f);
                     }
                 }
             }
@@ -129,7 +162,6 @@ public class Mesh {
             System.out.println("Failed to load " + file);
             throw new RuntimeException(e);
         }
-
     }
 
 }
