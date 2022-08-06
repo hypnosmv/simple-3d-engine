@@ -8,8 +8,8 @@ public class Camera {
     private float cameraNear = 0.1f;
     private float cameraFar = 1000.0f;
     private float FOV = 90.0f;
-    public float moveSpeed = 50.0f;
-    public float rotationSpeed = 0.02f;
+    public float moveSpeed = 20.0f;
+    public float rotationSpeed = 0.0005f;
     public float fXaw = 0.0f;
     public float fYaw = 0.0f;
 

@@ -1,11 +1,12 @@
 package Window;
 
 import Engine.Output3d;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import java.nio.*;
+import java.text.DecimalFormat;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -21,8 +22,13 @@ public class Window {
     private String title = "";
 
     // Calculate frame timings (essential for proper movement and camera rotation)
-    private float prevFrameTime = 0.0f;
-    private float frameTime = 0.0f;
+    private float frameTime = 0.00001f;
+    private float elapsedTime = 0.0f;
+
+    // FPS stuff
+    private DecimalFormat df = new DecimalFormat("#.00");
+    private float titleClock = 0.0f;
+    private long frames = 1;
 
     // User update
     private UserUpdate userUpdate;
@@ -34,6 +40,7 @@ public class Window {
         this.width = width;
         this.height = height;
         this.title = title;
+        df.setMaximumFractionDigits(2);
 
         userUpdate = new UserUpdate();
         output3d = new Output3d(this.width, this.height);
@@ -88,7 +95,7 @@ public class Window {
         }
 
         glfwMakeContextCurrent(window);
-        glfwSwapInterval(1);
+        //glfwSwapInterval(1);
         glfwShowWindow(window);
     }
 
@@ -96,14 +103,21 @@ public class Window {
         GL.createCapabilities();
 
         while ( !glfwWindowShouldClose(window) ) {
-            this.frameTime = (float)glfwGetTime();
+            this.elapsedTime = (float)glfwGetTime();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            output3d.display3d(this.prevFrameTime);
+            output3d.display3d(frameTime);
+
+            frames++;
+            if (elapsedTime - titleClock > 0.2f) {
+                titleClock = elapsedTime;
+                glfwSetWindowTitle(window, title + "   FPS: " + df.format(1/frameTime) + "   Average FPS: " + df.format(1 / (elapsedTime / (float)frames)));
+            }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-            this.prevFrameTime = (float)glfwGetTime() - this.frameTime;
+
+            frameTime = (float)glfwGetTime() - elapsedTime;
         }
     }
 }

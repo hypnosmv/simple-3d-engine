@@ -77,7 +77,7 @@ public class Mesh {
 
                         // Different formats
                         if (!line.contains("/")) {
-                            while (i < line.length()) {
+                            /*while (i < line.length()) {
                                 // Get to index
                                 for (; i < line.length(); i++) {
                                     if (line.charAt(i) == ' ') break;
@@ -87,13 +87,15 @@ public class Mesh {
                                 // Get the index
                                 numberInt = Integer.parseInt(numberString.toString());
                                 numberString = new StringBuilder();
-                                f.verts.add(vecs.get(numberInt - 1));
+                                //f.verts.add(vecs.get(numberInt - 1));
+                                System.out.println(vecs.get(numberInt - 1).x + " " + vecs.get(numberInt - 1).y + " " + vecs.get(numberInt - 1).z);
                                 i++;
-                            }
+                            }*/
                         }
                         else {
 
                             // Add polygons that store 3+ vectors
+                            int vector = 0;
                             while (i < line.length()) {
                                 // Get to index
                                 while (line.charAt(i) != '/') {
@@ -104,7 +106,8 @@ public class Mesh {
                                 // Get the index
                                 numberInt = Integer.parseInt(numberString.toString());
                                 numberString = new StringBuilder();
-                                f.verts.add(vecs.get(numberInt - 1));
+                                f.verts[vector] = vecs.get(numberInt - 1);
+                                vector++;
 
                                 // Go further or end
                                 while (line.charAt(i) == '/' || Character.isDigit(line.charAt(i))) {

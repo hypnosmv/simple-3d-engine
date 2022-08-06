@@ -65,32 +65,38 @@ public class Output3d {
 
                 Polygon renderRequest = new Polygon();
 
-                renderRequest.verts.addAll(meshes.get(mesh).polygons.get(polygon).verts);
+                for(int i = 0; i < 3; i++) {
+                    renderRequest.verts[i] = meshes.get(mesh).polygons.get(polygon).verts[i];
+                }
 
                 // Find normal to polygon plane
-                Vector3f normal = Vector3f.crossProduct(new Vector3f(renderRequest.verts.get(1).x - renderRequest.verts.get(0).x, renderRequest.verts.get(1).y - renderRequest.verts.get(0).y, renderRequest.verts.get(1).z - renderRequest.verts.get(0).z), new Vector3f(renderRequest.verts.get(2).x - renderRequest.verts.get(0).x, renderRequest.verts.get(2).y - renderRequest.verts.get(0).y, renderRequest.verts.get(2).z - renderRequest.verts.get(0).z));
+                Vector3f normal = Vector3f.crossProduct(new Vector3f(renderRequest.verts[1].x - renderRequest.verts[0].x, renderRequest.verts[1].y - renderRequest.verts[0].y, renderRequest.verts[1].z - renderRequest.verts[0].z), new Vector3f(renderRequest.verts[2].x - renderRequest.verts[0].x, renderRequest.verts[2].y - renderRequest.verts[0].y, renderRequest.verts[2].z - renderRequest.verts[0].z));
                 normal.normalize();
 
                 // Compare 2 vectors using dot product (taking into account the camera vector)
-                if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(renderRequest.verts.get(0), camera.position)) < 0) {
+                if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(renderRequest.verts[0], camera.position)) < 0) {
 
                     // Convert world space into view space
-                    for (int i = 0; i < renderRequest.verts.size(); i++) {
-                        renderRequest.verts.set(i, viewMatrix.multiply(renderRequest.verts.get(i)));
+                    for (int i = 0; i < 3; i++) {
+                        renderRequest.verts[i] = viewMatrix.multiply(renderRequest.verts[i]);
                     }
 
-                    // View space trimming, we don't need to process window space trim,
-                    // because OpenGL doesn't draw outside the window
-                    renderRequest = Vector3f.clipAgainstPlane(new Vector3f(0.0f, 0.0f, 0.1f), new Vector3f(0.0f, 0.0f, 1.0f), renderRequest);
+                    // View space trimming, we don't need to process window space
+                    // trimming, because OpenGL doesn't draw outside the window
+                    Polygon[] clippedPolygons = Vector3f.clipAgainstPlane(new Vector3f(0.0f, 0.0f, 0.1f), new Vector3f(0.0f, 0.0f, 1.0f), renderRequest);
 
-                    // Light's color intensity (very primitive)
-                    renderRequest.color = - normal.x * camera.lookDirection.x - normal.y * camera.lookDirection.y - normal.z * camera.lookDirection.z;
-
-                    // Calculate depth of polygon
-                    renderRequest.calculateZDepth();
-
-                    // Add it to the queue
-                    renderQueue.add(renderRequest);
+                    if (clippedPolygons.length != 0) {
+                        renderRequest = clippedPolygons[0];
+                        renderRequest.lightDensity = -normal.x * camera.lookDirection.x - normal.y * camera.lookDirection.y - normal.z * camera.lookDirection.z;
+                        renderRequest.calculateZDepth();
+                        renderQueue.add(renderRequest);
+                        if (clippedPolygons.length == 2) {
+                            Polygon renderRequest2 = clippedPolygons[1];
+                            renderRequest2.lightDensity = renderRequest.lightDensity;
+                            renderRequest2.calculateZDepth();
+                            renderQueue.add(renderRequest2);
+                        }
+                    }
 
                 }
 
@@ -108,7 +114,7 @@ public class Output3d {
                     vector = projectionMatrix.multiply(vector);
 
                     // Color and display cords
-                    glColor3f(polygon.color, polygon.color, polygon.color);
+                    glColor3f(polygon.lightDensity, polygon.lightDensity, polygon.lightDensity);
                     glVertex2f(vector.x, vector.y);
 
                 }
@@ -142,9 +148,9 @@ public class Output3d {
         if (userUpdate.statusKeyD()) camera.position = Vector3f.subtractVectors(camera.position, cameraLeft);
 
         // Mouse camera rotation
-        camera.fXaw += userUpdate.getCursorPosX() * camera.rotationSpeed * this.frameTime;
+        camera.fXaw += userUpdate.getCursorPosX() * camera.rotationSpeed;
         camera.checkFXaw();
-        camera.fYaw += userUpdate.getCursorPosY() * camera.rotationSpeed * this.frameTime;
+        camera.fYaw += userUpdate.getCursorPosY() * camera.rotationSpeed;
 
     }
 

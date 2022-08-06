@@ -82,15 +82,19 @@ public class Vector3f {
         return plane_n.x * vector.x + plane_n.y * vector.y + plane_n.z * vector.z - Vector3f.dotProduct(plane_n, plane_p);
     }
 
-    public static Polygon clipAgainstPlane(Vector3f plane_p, Vector3f plane_n, Polygon polygon) {
+    // Return 0, 1, 2 polygons that represent the polygon intersecting the camera's plane
+    public static Polygon[] clipAgainstPlane(Vector3f plane_p, Vector3f plane_n, Polygon polygon) {
+
+        // Output array
+        Polygon[] polygons = new Polygon[0];
 
         // Normalize plane normal
         plane_n = Vector3f.staticNormalize(plane_n);
 
-        // Find distances
-        ArrayList<Float> distances = new ArrayList<>();
-        for (int i = 0; i < polygon.verts.size(); i++) {
-            distances.add(Vector3f.calculateDistance(plane_p, plane_n, polygon.verts.get(i)));
+        // Find distances between the plane and vertexes
+        float[] distances = new float[3];
+        for (int i = 0; i < 3; i++) {
+            distances[i] = Vector3f.calculateDistance(plane_p, plane_n, polygon.verts[i]);
         }
 
         // Array lists that store vectors of inside and outside points accordingly
@@ -98,8 +102,8 @@ public class Vector3f {
         ArrayList<Integer> outsidePointsIndexes = new ArrayList<>();
 
         // Find indexes of points that are inside or outside
-        for (int i = 0; i < distances.size(); i++) {
-            if (distances.get(i) >= 0.0f) {
+        for (int i = 0; i < 3; i++) {
+            if (distances[i] >= 0.0f) {
                 insidePointsIndexes.add(i);
             }
             else {
@@ -111,54 +115,54 @@ public class Vector3f {
         insidePointsIndexes = QuickSort.quickSortIndexes(insidePointsIndexes);
         outsidePointsIndexes = QuickSort.quickSortIndexes(outsidePointsIndexes);
 
-        // Determine how many points are inside or outside
+        // Determine how many points are inside
         int insidePointsCount = insidePointsIndexes.size();
-        int outsidePointsCount = outsidePointsIndexes.size();
 
-        // If all points are inside, just return the input polygon
-        if (outsidePointsCount == 0) {
-            return polygon;
+        // Based on insidePointCount we determine the number of polygons returned
+        switch (insidePointsCount) {
+            case 3:
+                polygons = new Polygon[1];
+                polygons[0] = polygon;
+                break;
+            case 1:
+                // We just clip the outside vertices,
+                // no need to return an additional polygon
+                polygons = new Polygon[1];
+
+                // Trim both sides which contain the inside point
+                polygon.verts[outsidePointsIndexes.get(0)] = Vector3f.intersectPlane(plane_p, plane_n, polygon.verts[insidePointsIndexes.get(0)], polygon.verts[outsidePointsIndexes.get(0)]);
+                polygon.verts[outsidePointsIndexes.get(1)] = Vector3f.intersectPlane(plane_p, plane_n, polygon.verts[insidePointsIndexes.get(0)], polygon.verts[outsidePointsIndexes.get(1)]);
+
+                // Add the polygon to the return array
+                polygons[0] = polygon;
+                break;
+            case 2:
+                // There is only one vertex outside, so we need to fill the gap
+                // with the help of an additional polygon
+                polygons = new Polygon[2];
+                Polygon additionalPolygon = new Polygon();
+
+                // One of the additional polygon's vertices is just one of the inside points,
+                // the other we have to create by clipping one of the outside points
+                additionalPolygon.verts[0] = polygon.verts[insidePointsIndexes.get(1)];
+                additionalPolygon.verts[2] = Vector3f.intersectPlane(plane_p, plane_n, polygon.verts[insidePointsIndexes.get(1)], polygon.verts[outsidePointsIndexes.get(0)]);
+
+                // Now, after using the outside point to create
+                // additionalPolygon.verts[2], we can clip the outside point
+                polygon.verts[outsidePointsIndexes.get(0)] = Vector3f.intersectPlane(plane_p, plane_n, polygon.verts[insidePointsIndexes.get(0)], polygon.verts[outsidePointsIndexes.get(0)]);
+
+                // The clipped outside point is common to both polygons
+                additionalPolygon.verts[1] = polygon.verts[outsidePointsIndexes.get(0)];
+
+                // Add the polygons to the return array
+                polygons[0] = polygon;
+                polygons[1] = additionalPolygon;
+
+                break;
         }
 
-        // If all points are outside, just return a polygon
-        // without any vectors and no vectors will be processed
-        if (insidePointsCount == 0) {
-            return new Polygon();
-        }
-
-        // If only one point is outside, return a new polygon
-        // that contains an additional point
-        if (outsidePointsCount == 1) {
-
-            // Initialization
-            Polygon newPolygon = new Polygon();
-
-            // Add all inside points
-            for (int i = 0; i < insidePointsCount; i++) {
-                newPolygon.verts.add(polygon.verts.get(insidePointsIndexes.get(i)));
-            }
-
-            // Add two points that were created by
-            // clipping the outside one
-            newPolygon.verts.add(Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(insidePointsCount - 1)), polygon.verts.get(outsidePointsIndexes.get(0))));
-            newPolygon.verts.add(Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(0)), polygon.verts.get(outsidePointsIndexes.get(outsidePointsCount - 1))));
-
-            return newPolygon;
-        }
-
-        // If some points are inside and some outside, we need to
-        // properly trim the exact two sides that intersect
-        if (insidePointsCount != polygon.verts.size()) {
-
-            // Clip the outside point with index 0
-            // and clip the one with index (size-1)
-            polygon.verts.set(outsidePointsIndexes.get(0), Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(insidePointsCount - 1)), polygon.verts.get(outsidePointsIndexes.get(0))));
-            polygon.verts.set(outsidePointsIndexes.get(outsidePointsCount - 1), Vector3f.intersectPlane(plane_p, plane_n, polygon.verts.get(insidePointsIndexes.get(0)), polygon.verts.get(outsidePointsIndexes.get(outsidePointsCount - 1))));
-
-        }
-
-        // If something goes wrong, just return the original one
-        return polygon;
+        // Return the array
+        return polygons;
     }
 
 }
