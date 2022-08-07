@@ -136,7 +136,7 @@ public class Window {
                 else {
                     int onePercentCount = Math.round((frameRates.size() - 1) * 0.01f);
                     float totalOnePercent = 0;
-                    for (int i = 0; i < onePercentCount; i++) {
+                    for (int i = 0; i <= onePercentCount; i++) {
                         totalOnePercent += frameRates.get(i);
                     }
                     System.out.println("Average FPS: " + df.format(frames / totalFrameTime) + " 1% FPS: " + df.format(totalOnePercent / (float) onePercentCount));
