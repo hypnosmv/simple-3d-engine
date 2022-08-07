@@ -29,6 +29,7 @@ public class Window {
     private DecimalFormat df = new DecimalFormat("#.00");
     private float titleClock = 0.0f;
     private long frames = 1;
+    private long secondsTimer = 0;
 
     // User update
     private UserUpdate userUpdate;
@@ -109,9 +110,14 @@ public class Window {
             output3d.display3d(frameTime);
 
             frames++;
+            String fpsInfo = "FPS: " + df.format(1/frameTime) + " Average FPS: " + df.format(1 / (elapsedTime / (float)frames));
             if (elapsedTime - titleClock > 0.2f) {
                 titleClock = elapsedTime;
-                glfwSetWindowTitle(window, title + "   FPS: " + df.format(1/frameTime) + "   Average FPS: " + df.format(1 / (elapsedTime / (float)frames)));
+                glfwSetWindowTitle(window, title + "  " + fpsInfo);
+            }
+            if ((int)elapsedTime > secondsTimer + 5) {
+                secondsTimer = (int)elapsedTime;
+                System.out.println(fpsInfo);
             }
 
             glfwSwapBuffers(window);

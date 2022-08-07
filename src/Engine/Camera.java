@@ -14,9 +14,10 @@ public class Camera {
     public float fYaw = 0.0f;
 
     // Position and look direction
-    public Vector3f position = new Vector3f(0.0f, 0.0f, 0.0f);
+    public Vector3f position = new Vector3f(0.0f, 0.0f, -200.0f);
     public Vector3f lookDirection = new Vector3f(0.0f, 0.0f, 0.0f);
 
+    // Move direction vector used only for WSAD fps-like movement
     public Vector3f moveDirection  = new Vector3f(0.0f, 0.0f, 0.0f);
 
     public float getCameraNear() {
@@ -31,6 +32,8 @@ public class Camera {
         return FOV;
     }
 
+    // Rotation along the x-axis can cause flipping over,
+    // so we should check if fXaw angle is in range (-pi/2; pi/2)
     public void checkFXaw() {
 
         // Somehow something bigger than 2 works and camera doesn't flip

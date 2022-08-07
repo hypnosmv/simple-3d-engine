@@ -40,14 +40,18 @@ public class Output3d {
     // Loop process
     public void display3d(float frameTime) {
 
+        // Frame time and total elapsed time
         this.frameTime = frameTime;
         float elapsedTime = (float)glfwGetTime();
 
-        keyboardInput();
+        // User keyboard and mouse input
+        userInput();
 
+        // View matrix calculations
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 1.0f);
         camera.lookDirection = Matrix4x4.multiplyMat4x4Mat4x4(Matrix4x4.rotateX(camera.fXaw), Matrix4x4.rotateY(camera.fYaw)).multiply(cameraTarget);
         cameraTarget = Vector3f.addVectors(camera.position, camera.lookDirection);
+        viewMatrix = Matrix4x4.quickInverse(Matrix4x4.pointAt(camera.position, cameraTarget, new Vector3f(0.0f, 1.0f, 0.0f)));
 
         // Get independent of fXaw look direction vector
         // Move direction vector is used only for WSAD movement
@@ -55,46 +59,48 @@ public class Output3d {
         camera.moveDirection.z = camera.lookDirection.z;
         camera.moveDirection.normalize();
 
-        viewMatrix = Matrix4x4.quickInverse(Matrix4x4.pointAt(camera.position, cameraTarget, new Vector3f(0.0f, 1.0f, 0.0f)));
-
         for (int mesh = 0; mesh < meshes.size(); mesh++) {
 
-            ArrayList<Polygon> renderQueue = new ArrayList<>();
+            // Used to store polygons during the mesh pipeline
+            // Array list is slower than array, but it
+            // uses less memory and is more flexible
+            ArrayList<Polygon> displayQueue = new ArrayList<>();
 
-            for (int polygon = 0; polygon < meshes.get(mesh).polygons.size(); polygon++) {
+            for (int polygon = 0; polygon < meshes.get(mesh).polygons.length; polygon++) {
 
-                Polygon renderRequest = new Polygon();
-
+                // Get a copy of a polygon
+                Polygon displayPolygon = new Polygon();
                 for(int i = 0; i < 3; i++) {
-                    renderRequest.verts[i] = meshes.get(mesh).polygons.get(polygon).verts[i];
+                    displayPolygon.verts[i] = meshes.get(mesh).polygons[polygon].verts[i];
                 }
 
                 // Find normal to polygon plane
-                Vector3f normal = Vector3f.crossProduct(new Vector3f(renderRequest.verts[1].x - renderRequest.verts[0].x, renderRequest.verts[1].y - renderRequest.verts[0].y, renderRequest.verts[1].z - renderRequest.verts[0].z), new Vector3f(renderRequest.verts[2].x - renderRequest.verts[0].x, renderRequest.verts[2].y - renderRequest.verts[0].y, renderRequest.verts[2].z - renderRequest.verts[0].z));
+                Vector3f normal = Vector3f.crossProduct(new Vector3f(displayPolygon.verts[1].x - displayPolygon.verts[0].x, displayPolygon.verts[1].y - displayPolygon.verts[0].y, displayPolygon.verts[1].z - displayPolygon.verts[0].z), new Vector3f(displayPolygon.verts[2].x - displayPolygon.verts[0].x, displayPolygon.verts[2].y - displayPolygon.verts[0].y, displayPolygon.verts[2].z - displayPolygon.verts[0].z));
                 normal.normalize();
 
                 // Compare 2 vectors using dot product (taking into account the camera vector)
-                if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(renderRequest.verts[0], camera.position)) < 0) {
+                if (Vector3f.dotProduct(normal, Vector3f.subtractVectors(displayPolygon.verts[0], camera.position)) < 0) {
 
-                    // Convert world space into view space
+                    // Convert world space into view space (what camera sees)
                     for (int i = 0; i < 3; i++) {
-                        renderRequest.verts[i] = viewMatrix.multiply(renderRequest.verts[i]);
+                        displayPolygon.verts[i] = viewMatrix.multiply(displayPolygon.verts[i]);
                     }
 
                     // View space trimming, we don't need to process window space
                     // trimming, because OpenGL doesn't draw outside the window
-                    Polygon[] clippedPolygons = Vector3f.clipAgainstPlane(new Vector3f(0.0f, 0.0f, 0.1f), new Vector3f(0.0f, 0.0f, 1.0f), renderRequest);
+                    Polygon[] clippedPolygons = Vector3f.clipAgainstPlane(new Vector3f(0.0f, 0.0f, 0.1f), new Vector3f(0.0f, 0.0f, 1.0f), displayPolygon);
 
+                    // Based on the trimming outcome prepare and add polygons
                     if (clippedPolygons.length != 0) {
-                        renderRequest = clippedPolygons[0];
-                        renderRequest.lightDensity = -normal.x * camera.lookDirection.x - normal.y * camera.lookDirection.y - normal.z * camera.lookDirection.z;
-                        renderRequest.calculateZDepth();
-                        renderQueue.add(renderRequest);
+                        displayPolygon = clippedPolygons[0];
+                        displayPolygon.lightDensity = -normal.x * camera.lookDirection.x - normal.y * camera.lookDirection.y - normal.z * camera.lookDirection.z;
+                        displayPolygon.calculateZDepth();
+                        displayQueue.add(displayPolygon);
                         if (clippedPolygons.length == 2) {
-                            Polygon renderRequest2 = clippedPolygons[1];
-                            renderRequest2.lightDensity = renderRequest.lightDensity;
-                            renderRequest2.calculateZDepth();
-                            renderQueue.add(renderRequest2);
+                            Polygon gapPolygon = clippedPolygons[1];
+                            gapPolygon.lightDensity = displayPolygon.lightDensity;
+                            gapPolygon.calculateZDepth();
+                            displayQueue.add(gapPolygon);
                         }
                     }
 
@@ -103,15 +109,18 @@ public class Output3d {
             }
 
             // Sort using z-depth (painter's algorithm)
-            renderQueue = QuickSort.quickSortPolygons(renderQueue);
+            displayQueue = QuickSort.quickSortPolygons(displayQueue);
 
             // Draw polygons of the mesh
-            for (Polygon polygon : renderQueue) {
+            for (Polygon polygon : displayQueue) {
                 glBegin(GL_POLYGON);
                 for (Vector3f vector : polygon.verts) {
 
                     // Project onto the display using the projection matrix
                     vector = projectionMatrix.multiply(vector);
+
+                    // Scale the vector by its w element (calculated during matrix multiplications)
+                    vector.scaleVector(1/vector.w);
 
                     // Color and display cords
                     glColor3f(polygon.lightDensity, polygon.lightDensity, polygon.lightDensity);
@@ -124,7 +133,8 @@ public class Output3d {
     }
 
     // Movement handling
-    private void keyboardInput() {
+    private void userInput() {
+
         // Space - move up, left shift - move down
         if (userUpdate.statusKeySpace()) camera.position.y += camera.moveSpeed * this.frameTime;
         if (userUpdate.statusKeyLeftShift()) camera.position.y -= camera.moveSpeed * this.frameTime;

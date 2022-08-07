@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Mesh {
-    public ArrayList<Polygon> polygons = new ArrayList<>();
+    public Polygon[] polygons;
 
     public void inputOBJ(String file) {
 
@@ -17,6 +17,9 @@ public class Mesh {
 
             // Read vectors
             ArrayList<Vector3f> vecs = new ArrayList<>();
+
+            // Array list of polygons
+            ArrayList<Polygon> polygonsArrayList = new ArrayList<>();
 
             while (buffReader.ready()) {
 
@@ -96,7 +99,7 @@ public class Mesh {
                                 else if (vector == 2) {
                                     polygon.verts[vector] = vecs.get(numberInt - 1);
                                     vector++;
-                                    this.polygons.add(polygon);
+                                    polygonsArrayList.add(polygon);
                                     buffer.newVector(polygon.verts[2]);
                                 }
                                 else {
@@ -104,7 +107,7 @@ public class Mesh {
                                     newPolygon.verts[0].newVector(polygon.verts[0]);
                                     newPolygon.verts[1].newVector(buffer);
                                     newPolygon.verts[2].newVector(vecs.get(numberInt - 1));
-                                    this.polygons.add(newPolygon);
+                                    polygonsArrayList.add(newPolygon);
                                     buffer.newVector(newPolygon.verts[2]);
                                 }
 
@@ -113,7 +116,6 @@ public class Mesh {
                         }
                         else {
 
-                            // Add polygons that store 3+ vectors
                             int vector = 0;
                             Vector3f buffer = new Vector3f(0.0f, 0.0f, 0.0f);
                             while (i < line.length()) {
@@ -133,7 +135,7 @@ public class Mesh {
                                 else if (vector == 2) {
                                     polygon.verts[vector] = vecs.get(numberInt - 1);
                                     vector++;
-                                    this.polygons.add(polygon);
+                                    polygonsArrayList.add(polygon);
                                     buffer.newVector(polygon.verts[2]);
                                 }
                                 else {
@@ -141,7 +143,7 @@ public class Mesh {
                                     newPolygon.verts[0].newVector(polygon.verts[0]);
                                     newPolygon.verts[1].newVector(buffer);
                                     newPolygon.verts[2].newVector(vecs.get(numberInt - 1));
-                                    this.polygons.add(newPolygon);
+                                    polygonsArrayList.add(newPolygon);
                                     buffer.newVector(newPolygon.verts[2]);
                                 }
 
@@ -156,6 +158,12 @@ public class Mesh {
                         }
                     }
                 }
+            }
+
+            this.polygons = new Polygon[polygonsArrayList.size()];
+
+            for(int i = 0; i < this.polygons.length; i++) {
+                this.polygons[i] = polygonsArrayList.get(i);
             }
 
         } catch (IOException e) {

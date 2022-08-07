@@ -10,6 +10,7 @@ public class Vector3f {
     public float x;
     public float y;
     public float z;
+    public float w = 1.0f;
 
     // Constructor
     public Vector3f(float x, float y, float z) {
@@ -58,6 +59,13 @@ public class Vector3f {
 
     public static Vector3f multiplyVector(Vector3f vector, float k) {
         return new Vector3f(vector.x * k, vector.y * k, vector.z * k);
+    }
+
+    public void scaleVector(float k)
+    {
+        this.x *= k;
+        this.y *= k;
+        this.z *= k;
     }
 
     // Return a vector on a line which intersects the plane
