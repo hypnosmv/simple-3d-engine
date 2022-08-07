@@ -72,6 +72,7 @@ public class Output3d {
                 Polygon displayPolygon = new Polygon();
                 for(int i = 0; i < 3; i++) {
                     displayPolygon.verts[i] = meshes.get(mesh).polygons[polygon].verts[i];
+                    displayPolygon.color = meshes.get(mesh).polygons[polygon].color;
                 }
 
                 // Find normal to polygon plane
@@ -99,6 +100,7 @@ public class Output3d {
                         if (clippedPolygons.length == 2) {
                             Polygon gapPolygon = clippedPolygons[1];
                             gapPolygon.lightDensity = displayPolygon.lightDensity;
+                            gapPolygon.color = displayPolygon.color;
                             gapPolygon.calculateZDepth();
                             displayQueue.add(gapPolygon);
                         }
@@ -123,7 +125,7 @@ public class Output3d {
                     vector.scaleVector(1/vector.w);
 
                     // Color and display cords
-                    glColor3f(polygon.lightDensity, polygon.lightDensity, polygon.lightDensity);
+                    glColor3f(polygon.color.x * polygon.lightDensity, polygon.color.y * polygon.lightDensity, polygon.color.z * polygon.lightDensity);
                     glVertex2f(vector.x, vector.y);
 
                 }

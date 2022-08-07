@@ -4,6 +4,7 @@ public class Polygon {
     public Vector3f[] verts = new Vector3f[3];
     public float zDepth = 0.0f;
     public float lightDensity = 0.0f;
+    public Vector3f color = new Vector3f(1.0f, 1.0f, 1.0f);
 
     public Polygon() {
         verts[0] = new Vector3f(0.0f, 0.0f, 0.0f);

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Mesh {
     public Polygon[] polygons;
@@ -20,6 +21,8 @@ public class Mesh {
 
             // Array list of polygons
             ArrayList<Polygon> polygonsArrayList = new ArrayList<>();
+
+            Random random = new Random();
 
             while (buffReader.ready()) {
 
@@ -164,6 +167,7 @@ public class Mesh {
 
             for(int i = 0; i < this.polygons.length; i++) {
                 this.polygons[i] = polygonsArrayList.get(i);
+                this.polygons[i].color = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
             }
 
         } catch (IOException e) {
