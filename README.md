@@ -10,6 +10,6 @@ Current state:
   - LShift/Space vertical movement
   - polygon clipping
   - camera light is flashlight alike
-  - partially documented
-  - need for optimization
+  - mostly documented
   - reads .obj files
+  - colored polygons
