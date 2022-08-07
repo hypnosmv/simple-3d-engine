@@ -6,6 +6,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import java.nio.*;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -22,14 +23,16 @@ public class Window {
     private String title = "";
 
     // Calculate frame timings (essential for proper movement and camera rotation)
-    private float frameTime = 0.00001f;
-    private float elapsedTime = 0.0f;
+    private double frameTime = 0.001;
+    private double elapsedTime = 0.0;
 
     // FPS stuff
+    private boolean startBenchmark = false;
     private DecimalFormat df = new DecimalFormat("#.00");
-    private float titleClock = 0.0f;
-    private long frames = 1;
-    private long secondsTimer = 0;
+    private double clock = 0.0;
+    private int frames = 0;
+    private double totalFrameTime = 0.0f;
+    private ArrayList<Float> frameRates = new ArrayList<>();
 
     // User update
     private UserUpdate userUpdate;
@@ -42,6 +45,7 @@ public class Window {
         this.height = height;
         this.title = title;
         df.setMaximumFractionDigits(2);
+        frameRates.add(-1.0f);
 
         userUpdate = new UserUpdate();
         output3d = new Output3d(this.width, this.height);
@@ -104,26 +108,43 @@ public class Window {
         GL.createCapabilities();
 
         while ( !glfwWindowShouldClose(window) ) {
-            this.elapsedTime = (float)glfwGetTime();
+            this.elapsedTime = glfwGetTime();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            output3d.display3d(frameTime);
-
-            frames++;
-            String fpsInfo = "FPS: " + df.format(1/frameTime) + " Average FPS: " + df.format(1 / (elapsedTime / (float)frames));
-            if (elapsedTime - titleClock > 0.2f) {
-                titleClock = elapsedTime;
-                glfwSetWindowTitle(window, title + "  " + fpsInfo);
-            }
-            if ((int)elapsedTime > secondsTimer + 5) {
-                secondsTimer = (int)elapsedTime;
-                System.out.println(fpsInfo);
-            }
+            output3d.display3d((float)frameTime);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
-            frameTime = (float)glfwGetTime() - elapsedTime;
+            if (startBenchmark) {
+                float fps = 1.0f / (float) frameTime;
+                int index = 0;
+                while (fps > frameRates.get(index)) {
+                    if (index + 1 != frameRates.size()) index++;
+                    else break;
+                }
+                frameRates.add(index, fps);
+
+                totalFrameTime += frameTime;
+                frames++;
+            }
+
+            if (elapsedTime - clock > 5.0f) {
+                if (!startBenchmark) {
+                    startBenchmark = true;
+                }
+                else {
+                    int onePercentCount = Math.round((frameRates.size() - 1) * 0.01f);
+                    float totalOnePercent = 0;
+                    for (int i = 0; i < onePercentCount; i++) {
+                        totalOnePercent += frameRates.get(i);
+                    }
+                    System.out.println("Average FPS: " + df.format(frames / totalFrameTime) + " 1% FPS: " + df.format(totalOnePercent / (float) onePercentCount));
+                }
+                clock = elapsedTime;
+            }
+
+            frameTime = glfwGetTime() - elapsedTime;
         }
     }
 }
